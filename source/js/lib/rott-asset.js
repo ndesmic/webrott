@@ -36,5 +36,5 @@ export function loadSprite(asset) {
 		}
 	}
 
-	return [bitmap, height, width];
+	return bitmap;
 }

@@ -47,27 +47,27 @@ function getRottWall(wad, dataView){
 }
 
 function getRottImage(wad, dataView){
-	const [bitmap, height, width] = loadRottSprite(dataView);
+	const bitmap = loadRottSprite(dataView);
 	const pallets = getPallets(wad.get("PAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
 	indexBitmap.setPallet(pallets[0]);
-	indexBitmap.height = height;
-	indexBitmap.width = width;
+	indexBitmap.height = bitmap.length;
+	indexBitmap.width = bitmap[0].length;
 
 	return indexBitmap;
 }
 
 function getDoomImage(wad, dataView){
-	const [bitmap, height, width] = loadDoomImage(dataView);
+	const bitmap = loadDoomImage(dataView);
 	const pallets = getPallets(wad.get("PLAYPAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
 	indexBitmap.setPallet(pallets[0]);
-	indexBitmap.height = height;
-	indexBitmap.width = width;
+	indexBitmap.height = bitmap.length;
+	indexBitmap.width = bitmap[0].length;
 
 	return indexBitmap;
 }

@@ -36,6 +36,7 @@ export class VswapFile {
 			}
 
 			this.entries[i] = {
+				name: i,
 				offset: offsets[i],
 				size: lengths[i],
 				type
@@ -90,7 +91,7 @@ export class GameMapsFile {
 		const map = this.maps[mapNum];
 		const layers = new Array(3);
 
-		for (let layerIndex = 0; layerIndex < 1; layerIndex++) {
+		for (let layerIndex = 0; layerIndex < 3; layerIndex++) {
 			const planeStart = map.planeStart[layerIndex];
 			const planeLength = map.planeLength[layerIndex];
 			const layer = allocBlockArray(64, 64);

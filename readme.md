@@ -24,6 +24,7 @@ Table of Contents
 - [Chapter 8 - Reading Maps 3: Carmack Compression](8-maps3.md) (Wolfenstien 3D)
 - [Chapter 9 - Reading Walls 3: Wolfenstien](9-walls3.md) (Wolfenstien 3D)
 - [Chapter 10 - Reading Sprites 2: Wolfenstien](10-sprites2.md) (Wolfenstien 3D)
+- [Chapter 11 - Reading Maps 4: Putting it together](11-maps4.md) (Wolfenstien 3D)
 
 Working with the code
 ---------------------

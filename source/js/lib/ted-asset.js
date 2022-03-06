@@ -24,6 +24,12 @@ export function loadAsset(file, name, type){
 	}
 }
 
+export function extractWalls(file){
+	return file.entries
+		.filter((x) => x.type === "wall" && x.size > 0)
+		.map(x => loadWall(file.getAsset(x.name)));
+}
+
 export function loadWall(asset){
 	const dataView = asset instanceof DataView ? asset : new DataView(asset);
 	const height = 64;

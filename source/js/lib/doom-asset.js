@@ -40,5 +40,5 @@ export function loadImage(asset){
 		}
 	}
 
-	return [bitmap, height, width]
+	return bitmap;
 }
