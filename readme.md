@@ -22,6 +22,7 @@ Table of Contents
 - [Chapter 6 - Reading Maps](6-maps.md) (ROTT)
 - [Chapter 7 - Reading Maps 2: Wolfenstien](7-maps2.md) (Wolfenstien 3D, ROTT)
 - [Chapter 8 - Reading Maps 3: Carmack Compression](8-maps3.md) (Wolfenstien 3D)
+- [Chapter 9 - Reading Walls 3: Wolfenstien](9-walls3.md) (Wolfenstien 3D)
 
 Working with the code
 ---------------------

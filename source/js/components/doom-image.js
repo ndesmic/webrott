@@ -45,8 +45,8 @@ customElements.define("doom-image",
 		attachEvents() {
 			this.dom.aspect.addEventListener("change", this.updateHeight);
 		}
-		updateHeight() {
-			if (this.dom.aspect.checked) {
+		updateHeight(){
+			if(this.dom.aspect.checked){
 				this.dom.canvas.style.height = `${this.height * 4 * 1.16}px`;
 			} else {
 				this.dom.canvas.style.height = `${this.height * 4}px`;
@@ -55,11 +55,11 @@ customElements.define("doom-image",
 		attributeChangedCallback(name, oldValue, newValue) {
 			this[name] = newValue;
 		}
-		setLump(wad, lump) {
+		setLump(wad, lump){
 			this.wad = wad;
 			this.lump = lump;
 		}
-		renderImage() {
+		renderImage(){
 			const pallet = this.wad.get("PLAYPAL") ?? this.wad.get("PAL");
 			this.width = this.lump.getUint16(0, true);
 			this.height = this.lump.getUint16(2, true);
@@ -86,8 +86,8 @@ customElements.define("doom-image",
 					if (rowStart === 255) break;
 
 					const pixelCount = this.lump.getUint8(index);
-					index += 1;
-
+					index += 1; 
+					
 					//advance one more byte because of unused padding
 					index += 1;
 
