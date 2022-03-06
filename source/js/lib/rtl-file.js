@@ -1,19 +1,19 @@
 import { getString, trimString } from "./file-utils.js"
-import { writeBlockSequential, allocSquareBlock } from "./array-utils.js";
+import { writeBlockSequential, allocBlockArray } from "./array-utils.js";
 
 const mapSize = 64;
 const registeredLevelTag = 0x4344;
 const sharewareLevelTag = 0x4d4b;
 
 export class RtlFile {
-	constructor(arrayBuffer){
+	constructor(arrayBuffer) {
 		this.arrayBuffer = arrayBuffer;
 		this.dataView = new DataView(arrayBuffer);
 		this.signature = getString(this.dataView, 0, 4);
 		this.version = this.dataView.getUint32(4, true);
 		this.maps = new Array(100);
 
-		for(let i = 0; i < 100; i++){
+		for (let i = 0; i < 100; i++) {
 			this.maps[i] = {
 				used: this.dataView.getUint32((i * mapSize) + 8, true),
 				crc: this.dataView.getUint32((i * mapSize) + 12, true),
@@ -33,25 +33,25 @@ export class RtlFile {
 			}
 		}
 	}
-	getMap(mapNum){
+	getMap(mapNum) {
 		const map = this.maps[mapNum];
 		const layers = new Array(3);
 
-		for(let layerIndex = 0; layerIndex < 3; layerIndex++){
-			const wallStart = map.planeStart[layerIndex];
-			const wallLength = map.planeLength[layerIndex];
-			const layer = allocSquareBlock(128);
+		for (let layerIndex = 0; layerIndex < 3; layerIndex++) {
+			const planeStart = map.planeStart[layerIndex];
+			const planeLength = map.planeLength[layerIndex];
+			const layer = allocBlockArray(128, 128);
 
-			let byteIndex = wallStart;
+			let byteIndex = planeStart;
 			let mapIndex = 0;
-			while(byteIndex < (wallStart + wallLength)){
+			while (byteIndex < (planeStart + planeLength)) {
 				const tag = this.dataView.getUint16(byteIndex, true);
-				if(tag === map.relwTag){ //compressed data
+				if (tag === map.relwTag) { //compressed data
 					const count = this.dataView.getUint16(byteIndex + 2, true);
 					const value = this.dataView.getUint16(byteIndex + 4, true);
 					byteIndex += 6;
 
-					for(let i = 0; i < count; i++){
+					for (let i = 0; i < count; i++) {
 						writeBlockSequential(layer, mapIndex, value);
 						mapIndex++;
 					}

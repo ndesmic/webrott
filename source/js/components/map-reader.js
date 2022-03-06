@@ -1,8 +1,12 @@
 import { readFile, getExtension, getName } from "../lib/file-utils.js";
 import { RtlFile } from "../lib/rtl-file.js";
-import { MapHeadFile, GameMapsFile } from "../lib/wolf-file.js";
+import { MapHeadFile, GameMapsFile } from "../lib/ted-file.js";
 import "./rott-map.js";
 import "./wolf-map.js";
+
+const tedExtensions = ["wl1", "wl3", "wl6", "sod", "sdm", "sd1", "sd2", "sd3", "wj1", "wj6", "bm1", "bm2", "bm3"];
+const rottExtensions = ["rtl", "rtc"];
+const allExtensions = [...tedExtensions, ...rottExtensions];
 
 customElements.define("map-reader",
 	class extends HTMLElement {
@@ -26,7 +30,7 @@ customElements.define("map-reader",
 		render() {
 			this.attachShadow({ mode: "open" });
 			this.shadowRoot.innerHTML = `
-				<link rel="stylesheet" href="css/system.css">
+				<link rel="stylesheet" href="./css/system.css">
 				<style>
 					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: 45px minmax(0, calc(100% - 45px)); height: 100%; grid-template-areas: "input input" "list preview"; }
 					#entries-container { grid-area: list; cursor: pointer; overflow-y: auto; }
@@ -35,8 +39,14 @@ customElements.define("map-reader",
 					#input { grid-area: input; }
 				</style>
 				<div id="input">
-					<label for="map">Select a Wolfenstien 3D or Rise of the Triad map file:</label>
-					<input id="file" type="file" multiple accept=".rtl,.rtc,.wl1,.wl3,.wl6,.sdm,sod" />
+					<label for="map">Select map files:</label>
+					<input id="file" type="file" multiple accept="${allExtensions.map(e => "." + e).join(",")}" />
+					<div id="info">
+						<p>This supports many TED compatible formats including:</p>
+						<ul>
+							${allExtensions.map(e => `<li>.${e.toUpperCase()}</li>`).join("\n")}
+						</ul>
+					</div>
 				</div>
 				<div id="entries-container">
 					<table id="entries"></table>
@@ -48,7 +58,8 @@ customElements.define("map-reader",
 			this.dom = {
 				file: this.shadowRoot.querySelector("#file"),
 				entries: this.shadowRoot.querySelector("#entries"),
-				preview: this.shadowRoot.querySelector("#preview")
+				preview: this.shadowRoot.querySelector("#preview"),
+				info: this.shadowRoot.querySelector("#info")
 			};
 		}
 		attachEvents() {
@@ -56,7 +67,7 @@ customElements.define("map-reader",
 				const files = Array.from(e.target.files);
 				const extension = getExtension(files[0].name);
 				
-				if(files.length === 1 && (extension === "rtl" || extension == "rtc")){
+				if(files.length === 1 && rottExtensions.includes(extension)){
 					const arrayBuffer = await readFile(files[0]);
 					this.mapFile = new RtlFile(arrayBuffer);
 					this.dom.entries.innerHTML = "";
@@ -77,17 +88,19 @@ customElements.define("map-reader",
 						this.dom.entries.appendChild(tr);
 						index++;
 					}
-				}
-				if(e.target.files.length === 2 && (extension === "wl1" || extension === "wl3" || extension == "wl6" || extension === "sdm" || extension === "sod")){
-
+				} else if (e.target.files.length === 2 && tedExtensions.includes(extension)){
 					const gameMapFile = files.find(f => {
 						const fileName = getName(f.name);
 						return fileName === "gamemaps" || fileName === "maptemp";
 					});
 
-					const camackCompressed = getName(gameMapFile.name) === "gamemaps";
+					const gameMapHeadFile = files.find(f => {
+						const fileName = getName(f.name);
+						return fileName === "maphead" || fileName === "mapthead";
+					});
 
-					const headerArrayBuffer = await readFile(files.find(f => getName(f.name) === "maphead"));
+					const camackCompressed = getName(gameMapFile.name) === "gamemaps";
+					const headerArrayBuffer = await readFile(gameMapHeadFile);
 					const mapArrayBuffer = await readFile(gameMapFile);
 
 					this.mapFile = new GameMapsFile(mapArrayBuffer, new MapHeadFile(headerArrayBuffer),  camackCompressed);
@@ -111,6 +124,7 @@ customElements.define("map-reader",
 						index++;
 					}
 				}
+				this.dom.info.classList.add("hidden");
 			});
 		}
 		loadMap(index, type) {

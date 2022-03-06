@@ -20,6 +20,8 @@ Table of Contents
 - [Chapter 4 - Reading Walls 2: We Have Color](4-walls2.md) (Doom, ROTT)
 - [Chapter 5 - Reading Sprites](5-sprites.md) (Doom, ROTT)
 - [Chapter 6 - Reading Maps](6-maps.md) (ROTT)
+- [Chapter 7 - Reading Maps 2: Wolfenstien](7-maps2.md) (Wolfenstien 3D, ROTT)
+- [Chapter 8 - Reading Maps 3: Carmack Compression](8-maps3.md) (Wolfenstien 3D)
 
 Working with the code
 ---------------------
