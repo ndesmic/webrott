@@ -1,7 +1,11 @@
 export function writeBlockSequential(squareArray, index, value) {
-	const row = Math.floor(index / squareArray.length);
-	const col = index % squareArray.length;
-	squareArray[row][col] = value;
+	try {
+		const row = Math.floor(index / squareArray.length);
+		const col = index % squareArray.length;
+		squareArray[row][col] = value;
+	} catch(ex){
+		console.log(ex);
+	}
 }
 
 export function allocSquareBlock(size) {

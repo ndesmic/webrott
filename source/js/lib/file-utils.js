@@ -7,6 +7,18 @@ export function readFile(file) {
 	});
 }
 
+export function getExtension(filename){
+	const split = filename.split(".");
+	return split[split.length - 1].toLowerCase();
+}
+
+export function getName(filename){
+	const extSplit = filename.split(".");
+	const path = extSplit[extSplit.length - 2];
+	const pathSplit = path.split("/");
+	return pathSplit[pathSplit.length - 1].toLowerCase();
+}
+
 export function getString(dataView, offset, length) {
 	let str = "";
 	for (let i = 0; i < length; i++) {

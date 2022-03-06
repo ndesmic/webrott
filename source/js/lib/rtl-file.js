@@ -1,5 +1,5 @@
-import { getString, trimString } from "../lib/file-utils.js"
-import { writeBlockSequential, allocSquareBlock } from "../lib/array-utils.js";
+import { getString, trimString } from "./file-utils.js"
+import { writeBlockSequential, allocSquareBlock } from "./array-utils.js";
 
 const mapSize = 64;
 const registeredLevelTag = 0x4344;

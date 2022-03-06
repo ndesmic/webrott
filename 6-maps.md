@@ -1,7 +1,7 @@
 Maps
 ====
 
-Map loading is contained in RT_TED.C.  We can see the map loading in ReadROTTMap function inside.  We can see that a file contains multiple maps and they get read into a RTLMap object.
+Map loading is contained in `RT_TED.C`.  We can see the map loading in ReadROTTMap function inside.  We can see that a file contains multiple maps and they get read into a `RTLMap` object.
 
 ```c
 //RT_TED, ~line: 1351, ReadROTTMap,

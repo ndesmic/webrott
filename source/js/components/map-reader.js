@@ -1,6 +1,8 @@
-import { readFile } from "../lib/file-utils.js";
+import { readFile, getExtension, getName } from "../lib/file-utils.js";
 import { RtlFile } from "../lib/rtl-file.js";
-import "./rtl-map.js";
+import { MapHeadFile, GameMapsFile } from "../lib/wolf-file.js";
+import "./rott-map.js";
+import "./wolf-map.js";
 
 customElements.define("map-reader",
 	class extends HTMLElement {
@@ -33,8 +35,8 @@ customElements.define("map-reader",
 					#input { grid-area: input; }
 				</style>
 				<div id="input">
-					<label for="map">Select RTL/RTC:</label>
-					<input id="rtl" type="file" />
+					<label for="map">Select a Wolfenstien 3D or Rise of the Triad map file:</label>
+					<input id="file" type="file" multiple accept=".rtl,.rtc,.wl1,.wl3,.wl6,.sdm,sod" />
 				</div>
 				<div id="entries-container">
 					<table id="entries"></table>
@@ -44,40 +46,88 @@ customElements.define("map-reader",
 		}
 		cacheDom() {
 			this.dom = {
-				rtl: this.shadowRoot.querySelector("#rtl"),
+				file: this.shadowRoot.querySelector("#file"),
 				entries: this.shadowRoot.querySelector("#entries"),
 				preview: this.shadowRoot.querySelector("#preview")
 			};
 		}
 		attachEvents() {
-			this.dom.rtl.addEventListener("change", async e => {
-				const arrayBuffer = await readFile(e.target.files[0]);
-				this.rtl = new RtlFile(arrayBuffer);
-				this.dom.entries.innerHTML = "";
-				let index = 0;
+			this.dom.file.addEventListener("change", async e => {
+				const files = Array.from(e.target.files);
+				const extension = getExtension(files[0].name);
+				
+				if(files.length === 1 && (extension === "rtl" || extension == "rtc")){
+					const arrayBuffer = await readFile(files[0]);
+					this.mapFile = new RtlFile(arrayBuffer);
+					this.dom.entries.innerHTML = "";
+					let index = 0;
 
-				for (let map of this.rtl.maps.filter(m => m.used)) {
-					const thisIndex = index;
-					const tr = document.createElement("tr");
-					tr.addEventListener("click", () => this.loadMap(thisIndex));
-					const indexCell = document.createElement("td");
-					indexCell.textContent = index + 1;
-					const nameCell = document.createElement("td");
-					nameCell.textContent = map.name;
+					for (let map of this.mapFile.maps.filter(m => m.used)) {
+						const thisIndex = index;
+						const tr = document.createElement("tr");
+						tr.addEventListener("click", () => this.loadMap(thisIndex, "rott"));
+						const indexCell = document.createElement("td");
+						indexCell.textContent = index + 1;
+						const nameCell = document.createElement("td");
+						nameCell.textContent = map.name;
 
-					tr.appendChild(indexCell);
-					tr.appendChild(nameCell);
+						tr.appendChild(indexCell);
+						tr.appendChild(nameCell);
 
-					this.dom.entries.appendChild(tr);
-					index++;
+						this.dom.entries.appendChild(tr);
+						index++;
+					}
+				}
+				if(e.target.files.length === 2 && (extension === "wl1" || extension === "wl3" || extension == "wl6" || extension === "sdm" || extension === "sod")){
+
+					const gameMapFile = files.find(f => {
+						const fileName = getName(f.name);
+						return fileName === "gamemaps" || fileName === "maptemp";
+					});
+
+					const camackCompressed = getName(gameMapFile.name) === "gamemaps";
+
+					const headerArrayBuffer = await readFile(files.find(f => getName(f.name) === "maphead"));
+					const mapArrayBuffer = await readFile(gameMapFile);
+
+					this.mapFile = new GameMapsFile(mapArrayBuffer, new MapHeadFile(headerArrayBuffer),  camackCompressed);
+
+					this.dom.entries.innerHTML = "";
+					let index = 0;
+
+					for(let map of this.mapFile.maps){
+						const thisIndex = index;
+						const tr = document.createElement("tr");
+						tr.addEventListener("click", () => this.loadMap(thisIndex, "wolf"));
+						const indexCell = document.createElement("td");
+						indexCell.textContent = index + 1;
+						const nameCell = document.createElement("td");
+						nameCell.textContent = map.name;
+
+						tr.appendChild(indexCell);
+						tr.appendChild(nameCell);
+
+						this.dom.entries.appendChild(tr);
+						index++;
+					}
 				}
 			});
 		}
-		loadMap(index) {
+		loadMap(index, type) {
 			this.dom.preview.innerHTML = "";
-			const rtlMap = document.createElement("rtl-map");
-			rtlMap.setMap(this.rtl.getMap(index));
-			this.dom.preview.appendChild(rtlMap);
+			let map;
+			switch(type){
+				case "rott": {
+					map = document.createElement("rott-map");
+					break;
+				}
+				case "wolf": {
+					map = document.createElement("wolf-map");
+					break;
+				}
+			}
+			map.setMap(this.mapFile.getMap(index));
+			this.dom.preview.appendChild(map);
 		}
 		attributeChangedCallback(name, oldValue, newValue) {
 			this[name] = newValue;
