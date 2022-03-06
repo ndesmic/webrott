@@ -1,0 +1,23 @@
+{
+  "name": "webrott",
+  "version": "1.0.0",
+  "description": "An attempt at porting Rise of the Triad to web",
+  "main": "",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx http-server -o -c-1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ndesmic/webrott.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ndesmic/webrott/issues"
+  },
+  "homepage": "https://github.com/ndesmic/app-template-wc#readme"
+}
