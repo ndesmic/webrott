@@ -1,3 +1,5 @@
+import { getPaddedString } from "./wad-utils.js";
+
 export class Wad {
 	constructor(arrayBuffer){
 		this.arrayBuffer = arrayBuffer;
@@ -16,16 +18,7 @@ export class Wad {
 			this.entries.push({
 				offset: this.dataView.getInt32(index, true),
 				size: this.dataView.getInt32(index + 4, true),
-				name: [
-					this.dataView.getUint8(index + 8),
-					this.dataView.getUint8(index + 9),
-					this.dataView.getUint8(index + 10),
-					this.dataView.getUint8(index + 11),
-					this.dataView.getUint8(index + 12),
-					this.dataView.getUint8(index + 13),
-					this.dataView.getUint8(index + 14),
-					this.dataView.getUint8(index + 15)
-				].map(x => String.fromCharCode(x)).join("")
+				name: getPaddedString(this.dataView, index + 8)
 			});
 			index += 16;
 		}
@@ -33,6 +26,8 @@ export class Wad {
 	get(name){
 		name = name.padEnd(8, "\0");
 		const entry = this.entries.find(e => e.name.trim() === name.trim());
-		return new DataView(this.arrayBuffer, entry.offset, entry.size);
+		return entry 
+			? new DataView(this.arrayBuffer, entry.offset, entry.size)
+			: null;
 	}
 }

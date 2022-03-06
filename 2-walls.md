@@ -35,7 +35,7 @@ function getWall(dataView){
 
 This seems to get results that look reasonable.
 
-![wall textures](images/chapter2/reading-walls-1.png)
+![A red tinted and rotated image that looks vaguely like a triad](images/chapter2/reading-walls-1.png)
 
 For the pallet, we need to dig around the source code but it should be roughly similar to a Doom pallet (https://doomwiki.org/wiki/PLAYPAL).  This is specified in the WAD itself as the `PLAYPAL` lump. Doom also used 34 colormaps defined in the `COLORMAP` lump for lighting effects, but we can see the size of this lump is only 8192 bytes for ROTT.  Divide this by 256 (the size of each color map) and we get an even 32.  So there are 32 color maps.
 

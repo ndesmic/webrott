@@ -52,9 +52,13 @@ customElements.define("wad-reader",
 			this.dom.wad.addEventListener("change", async e => {
 				const arrayBuffer = await readFile(e.target.files[0]);
 				this.wad = new Wad(arrayBuffer);
+				this.dom.entries.innerHTML = "";
+				let index = 1;
 				for(let entry of this.wad.entries){
 					const tr = document.createElement("tr");
 					tr.addEventListener("click", () => this.loadAsset(entry.name));
+					const indexCell = document.createElement("td");
+					indexCell.textContent = index;
 					const nameCell = document.createElement("td");
 					nameCell.textContent = entry.name;
 					const offsetCell = document.createElement("td");
@@ -62,11 +66,13 @@ customElements.define("wad-reader",
 					const sizeCell = document.createElement("td");
 					sizeCell.textContent = entry.size;
 					
+					tr.appendChild(indexCell);
 					tr.appendChild(nameCell);
 					tr.appendChild(offsetCell);
 					tr.appendChild(sizeCell);
 					
 					this.dom.entries.appendChild(tr);
+					index++;
 				}
 			});
 		}

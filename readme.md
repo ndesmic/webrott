@@ -14,7 +14,10 @@ You can find the source code here: https://github.com/videogamepreservation/rott
 Table of Contents
 -----------------
 
-- [Part 1 - The Wad Format](1-wad.md) (Doom, ROTT)
+- [Chapter 1 - The Wad Format](1-wad.md) (Doom, ROTT)
+- [Chapter 2 - Reading Walls: A First Attempt](2-walls.md) (Doom, ROTT)
+- [Chapter 3 - Reading Pallets](3-pallets.md) (Doom, ROTT)
+- [Chapter 4 - Reading Walls 2: We Have Color](4-walls2.md) (Doom, ROTT)
 
 Working with the code
 ---------------------

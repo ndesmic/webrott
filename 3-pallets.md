@@ -45,7 +45,7 @@ function getPlayPal(dataView){
 
 Here we can see the base Doom pallet:
 
-![doom pallet](images/chapter3/doom-pallet.png)
+![A collection of 256 colored boxes representing the Doom color pallet](images/chapter3/doom-pallet.png)
 
 This isn't how things are actually drawn though, before that we run them through the colormap. `COLORMAP` is a lump that defines 34 maps, each map is 256 bytes each representing an index into the current `PLAYPAL` pallet.  Color maps are mostly for lighting in the Doom engine with each map representing a different darkness level.  So as sector brightness changes as well as the distance from the player, the colormap used becomes darker.  To show colormaps we need to know the pallet, so we get the `PLAYPAL` first.  For preview purposes we only need the base pallet so we won't worry about the other 13 for now.
 
@@ -91,7 +91,7 @@ function getColorMap(wad, dataView){
 
 One of the darker colormaps:
 
-![Doom colormap](images/chapter3/doom-colormap.png)
+![A collection of 256 boxes representing the 18th Doom colormap.  It's darker than the base pallet](images/chapter3/doom-colormap.png)
 
 We sprinkle a few CSS styles to make the table boxes bigger (I chose 32px).  I also like the table format because we could do things like overlay the index in the future.
 
