@@ -1,4 +1,4 @@
-import { getPaddedString } from "./wad-utils.js";
+import { getString } from "./file-utils.js";
 import "../components/doom-image.js";
 import "../components/rott-image.js";
 import "../components/rott-wall.js";
@@ -13,6 +13,9 @@ export function loadAsset(wad, name){
 	}
 	if(name === "PNAMES\0\0"){
 		return getPNames(dataView);
+	}
+	if(name === "CHNGLG\0\0"){
+		return getChangeLog(dataView);
 	}
 	if (wad.getType() === "rott" && /WALL/.test(name)) {
 		return getRottWall(wad, dataView);
@@ -125,7 +128,7 @@ function getPNames(dataView){
 
 	for(let i = 0; i < patchCount; i++){
 		const li = document.createElement("li");
-		li.textContent = getPaddedString(dataView, 4 + (i * 8));
+		li.textContent = getString(dataView, 4 + (i * 8), 8);
 
 		ul.appendChild(li);
 	}
@@ -134,4 +137,11 @@ function getPNames(dataView){
 	section.appendChild(ul);
 
 	return section;
+}
+
+function getChangeLog(dataView){
+	const txt = getString(dataView, 0, dataView.byteLength);
+	const pre = document.createElement("pre");
+	pre.textContent = txt;
+	return pre;
 }

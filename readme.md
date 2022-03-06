@@ -19,6 +19,7 @@ Table of Contents
 - [Chapter 3 - Reading Pallets](3-pallets.md) (Doom, ROTT)
 - [Chapter 4 - Reading Walls 2: We Have Color](4-walls2.md) (Doom, ROTT)
 - [Chapter 5 - Reading Sprites](5-sprites.md) (Doom, ROTT)
+- [Chapter 6 - Reading Maps](6-maps.md) (ROTT)
 
 Working with the code
 ---------------------

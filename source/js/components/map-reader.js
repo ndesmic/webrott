@@ -1,27 +1,27 @@
-import { Wad } from "../lib/wad.js";
-import { loadAsset } from "../lib/wad-asset.js";
 import { readFile } from "../lib/file-utils.js";
+import { RtlFile } from "../lib/rtl-file.js";
+import "./rtl-map.js";
 
-customElements.define("wad-reader",
+customElements.define("map-reader",
 	class extends HTMLElement {
-		static get observedAttributes(){
+		static get observedAttributes() {
 			return [];
 		}
-		constructor(){
+		constructor() {
 			super();
 			this.bind(this);
 		}
-		bind(element){
+		bind(element) {
 			element.attachEvents = element.attachEvents.bind(element);
 			element.cacheDom = element.cacheDom.bind(element);
 			element.render = element.render.bind(element);
 		}
-		connectedCallback(){
+		connectedCallback() {
 			this.render();
 			this.cacheDom();
 			this.attachEvents();
 		}
-		render(){
+		render() {
 			this.attachShadow({ mode: "open" });
 			this.shadowRoot.innerHTML = `
 				<link rel="stylesheet" href="css/system.css">
@@ -31,12 +31,10 @@ customElements.define("wad-reader",
 					#preview { grid-area: preview; overflow-y: auto; }
 					#preview canvas { image-rendering: pixelated;  }
 					#input { grid-area: input; }
-
-					#preview .pallet td { width: 32px; height: 32px; }
 				</style>
 				<div id="input">
-					<label for="wad">Select WAD:</label>
-					<input id="wad" type="file" />
+					<label for="map">Select RTL/RTC:</label>
+					<input id="rtl" type="file" />
 				</div>
 				<div id="entries-container">
 					<table id="entries"></table>
@@ -44,46 +42,44 @@ customElements.define("wad-reader",
 				<div id="preview"></div>
 			`;
 		}
-		cacheDom(){
+		cacheDom() {
 			this.dom = {
-				wad: this.shadowRoot.querySelector("#wad"),
+				rtl: this.shadowRoot.querySelector("#rtl"),
 				entries: this.shadowRoot.querySelector("#entries"),
 				preview: this.shadowRoot.querySelector("#preview")
 			};
 		}
-		attachEvents(){
-			this.dom.wad.addEventListener("change", async e => {
+		attachEvents() {
+			this.dom.rtl.addEventListener("change", async e => {
 				const arrayBuffer = await readFile(e.target.files[0]);
-				this.wad = new Wad(arrayBuffer);
+				this.rtl = new RtlFile(arrayBuffer);
 				this.dom.entries.innerHTML = "";
-				let index = 1;
-				for(let entry of this.wad.entries){
+				let index = 0;
+
+				for (let map of this.rtl.maps.filter(m => m.used)) {
+					const thisIndex = index;
 					const tr = document.createElement("tr");
-					tr.addEventListener("click", () => this.loadAsset(entry.name));
+					tr.addEventListener("click", () => this.loadMap(thisIndex));
 					const indexCell = document.createElement("td");
-					indexCell.textContent = index;
+					indexCell.textContent = index + 1;
 					const nameCell = document.createElement("td");
-					nameCell.textContent = entry.name;
-					const offsetCell = document.createElement("td");
-					offsetCell.textContent = entry.offset;
-					const sizeCell = document.createElement("td");
-					sizeCell.textContent = entry.size;
-					
+					nameCell.textContent = map.name;
+
 					tr.appendChild(indexCell);
 					tr.appendChild(nameCell);
-					tr.appendChild(offsetCell);
-					tr.appendChild(sizeCell);
-					
+
 					this.dom.entries.appendChild(tr);
 					index++;
 				}
 			});
 		}
-		loadAsset(name){
+		loadMap(index) {
 			this.dom.preview.innerHTML = "";
-			this.dom.preview.appendChild(loadAsset(this.wad, name));
+			const rtlMap = document.createElement("rtl-map");
+			rtlMap.setMap(this.rtl.getMap(index));
+			this.dom.preview.appendChild(rtlMap);
 		}
-		attributeChangedCallback(name, oldValue, newValue){
+		attributeChangedCallback(name, oldValue, newValue) {
 			this[name] = newValue;
 		}
 	}

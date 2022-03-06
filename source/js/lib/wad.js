@@ -1,4 +1,4 @@
-import { getPaddedString } from "./wad-utils.js";
+import { getString } from "./file-utils.js";
 
 export class Wad {
 	constructor(arrayBuffer){
@@ -18,7 +18,7 @@ export class Wad {
 			this.entries.push({
 				offset: this.dataView.getInt32(index, true),
 				size: this.dataView.getInt32(index + 4, true),
-				name: getPaddedString(this.dataView, index + 8)
+				name: getString(this.dataView, index + 8, 8)
 			});
 			index += 16;
 		}
