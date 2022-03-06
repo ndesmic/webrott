@@ -1,6 +1,6 @@
 import { allocBlockArray } from "./array-utils.js";
 import { IndexBitmap } from "../components/index-bitmap.js";
-import { wolfPallet } from "../lib/wolf-utils.js";
+import { wolfPallet, loadSprite } from "../lib/wolf-asset.js";
 
 export function loadAsset(file, name, type){
 	const asset = file.getAsset(name);
@@ -13,11 +13,19 @@ export function loadAsset(file, name, type){
 			element.setPallet(wolfPallet);
 			return element;
 		}
+		case "sprite": {
+			const element = new IndexBitmap();
+			element.height = 64;
+			element.width = 64;
+			element.setBitmap(loadSprite(asset, file.arrayBuffer));
+			element.setPallet(wolfPallet);
+			return element;
+		}
 	}
 }
 
-function loadWall(asset){
-	const dataView = new DataView(asset);
+export function loadWall(asset){
+	const dataView = asset instanceof DataView ? asset : new DataView(asset);
 	const height = 64;
 	const width = 64;
 

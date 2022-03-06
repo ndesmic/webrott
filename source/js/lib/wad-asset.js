@@ -1,10 +1,12 @@
 import { getString } from "./file-utils.js";
-import "../components/doom-image.js";
-import "../components/rott-image.js";
-import "../components/rott-wall.js";
+import { loadWall as loadTedWall } from "../lib/ted-asset.js";
+import { IndexBitmap } from "../components/index-bitmap.js"
+import { loadSprite as loadRottSprite } from "./rott-asset.js";
+import { loadImage as loadDoomImage } from "./doom-asset.js";
 
 export function loadAsset(wad, name){
 	const dataView = wad.get(name);
+	if(dataView.byteLength === 0) return getNullAsset();
 	if(name === "COLORMAP"){
 		return getColorMap(wad, dataView);
 	}
@@ -25,25 +27,70 @@ export function loadAsset(wad, name){
 		: getDoomImage(wad, dataView);
 }
 
-function getRottWall(wad, dataView){
-	const rottWall = document.createElement("rott-wall");
-	rottWall.setLump(wad, dataView);
+function getNullAsset(){
+	const div = document.createElement("div");
+	div.textContent = "Asset is null";
+	return div;
+}
 
-	return rottWall;
+function getRottWall(wad, dataView){
+	const bitmap = loadTedWall(dataView);
+	const pallets = getPallets(wad.get("PAL"));
+
+	const indexBitmap = new IndexBitmap();
+	indexBitmap.setBitmap(bitmap);
+	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.height = 64;
+	indexBitmap.width = 64;
+
+	return indexBitmap;
 }
 
 function getRottImage(wad, dataView){
-	const rottImage = document.createElement("rott-image");
-	rottImage.setLump(wad, dataView);
+	const [bitmap, height, width] = loadRottSprite(dataView);
+	const pallets = getPallets(wad.get("PAL"));
 
-	return rottImage;
+	const indexBitmap = new IndexBitmap();
+	indexBitmap.setBitmap(bitmap);
+	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.height = height;
+	indexBitmap.width = width;
+
+	return indexBitmap;
 }
 
 function getDoomImage(wad, dataView){
-	const doomImage = document.createElement("doom-image");
-	doomImage.setLump(wad, dataView);
+	const [bitmap, height, width] = loadDoomImage(dataView);
+	const pallets = getPallets(wad.get("PLAYPAL"));
 
-	return doomImage;
+	const indexBitmap = new IndexBitmap();
+	indexBitmap.setBitmap(bitmap);
+	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.height = height;
+	indexBitmap.width = width;
+
+	return indexBitmap;
+}
+
+function getPallets(dataView){
+	const mapCount = dataView.byteLength / 768;
+	const pallets = new Array(mapCount);
+
+	for (let map = 0; map < mapCount; map++) {
+		const pallet = new Array(256);
+
+		for(let index = 0; index < 256; index++){
+			const offset = (map * 768) + (index * 3);
+			pallet[index] = [
+				dataView.getUint8(offset),
+				dataView.getUint8(offset + 1),
+				dataView.getUint8(offset + 2),
+			];
+		}
+		pallets[map] = pallet;
+	}
+
+	return pallets;
 }
 
 function getPlayPal(dataView){

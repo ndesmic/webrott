@@ -26,7 +26,7 @@ customElements.define("asset-reader",
 		render(){
 			this.attachShadow({ mode: "open" });
 			this.shadowRoot.innerHTML = `
-				<link rel="stylesheet" href="../../shared/css/system.css">
+				<link rel="stylesheet" href="./css/system.css">
 				<style>
 					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: 45px minmax(0, calc(100% - 45px)); height: 100%; grid-template-areas: "input input" "list preview"; }
 					#entries-container { grid-area: list; cursor: pointer; overflow-y: auto; }

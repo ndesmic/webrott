@@ -13,10 +13,13 @@ export class IndexBitmap extends HTMLElement {
 		element.render = element.render.bind(element);
 		element.setBitmap = element.setBitmap.bind(element);
 		element.setPallet = element.setPallet.bind(element);
+		element.updateHeight = element.updateHeight.bind(element);
+		element.attachEvents = element.attachEvents.bind(element);
 	}
 	connectedCallback() {
 		this.render();
 		this.cacheDom();
+		this.attachEvents();
 		this.renderImage();
 	}
 	render() {
@@ -25,14 +28,37 @@ export class IndexBitmap extends HTMLElement {
 		this.shadowRoot.innerHTML = `
 				<style>
 					#canvas canvas { image-rendering: pixelated; width: ${scaleFactor * this.width}px; height: ${scaleFactor * this.height}px }
+					fieldset { border: none; }
 				</style>
 				<div id="canvas"></div>
+				<form>
+					<fieldset>
+						<label for="aspect">correct aspect (16:10)</label>
+						<input id="aspect" type="checkbox" checked />
+					</fieldset>
+				</form>
 			`;
+	}
+	updateHeight() {
+		const scaleFactor = this.scaleFactor ?? 4;
+		const canvas = this.dom.canvas.querySelector("canvas");
+		
+		if(!canvas) return;
+
+		if (this.dom.aspect.checked) {
+			canvas.style.height = `${this.height * scaleFactor * 1.16}px`;
+		} else {
+			canvas.style.height = `${this.height * scaleFactor}px`;
+		}
 	}
 	cacheDom() {
 		this.dom = {
-			canvas: this.shadowRoot.querySelector("#canvas")
+			canvas: this.shadowRoot.querySelector("#canvas"),
+			aspect: this.shadowRoot.querySelector("#aspect")
 		};
+	}
+	attachEvents(){
+		this.dom.aspect.addEventListener("change", this.updateHeight);
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
 		this[name] = newValue;
@@ -49,6 +75,7 @@ export class IndexBitmap extends HTMLElement {
 			this.dom.canvas.removeChild(this.dom.canvas.firstChild);
 		}
 		this.dom.canvas.appendChild(canvas);
+		this.updateHeight();
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
 		this[name] = newValue;
