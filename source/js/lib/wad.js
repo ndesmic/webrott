@@ -31,6 +31,7 @@ export class Wad {
 		}
 	}
 	get(name){
+		name = name.padEnd(8, "\0");
 		const entry = this.entries.find(e => e.name.trim() === name.trim());
 		return new DataView(this.arrayBuffer, entry.offset, entry.size);
 	}

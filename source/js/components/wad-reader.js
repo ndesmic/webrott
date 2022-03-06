@@ -26,16 +26,18 @@ customElements.define("wad-reader",
 				<link rel="stylesheet" href="css/system.css">
 				<style>
 					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: auto auto; grid-template-areas: "input input" "list preview"; }
-					#entries li { whitespace: pre; cursor: pointer; grid-area: list; }
+					#entries { grid-area: list; cursor: pointer; }
 					#preview { grid-area: preview; }
 					#preview canvas { width: 640px; height: 640px; image-rendering: pixelated;  }
 					#input { grid-area: input; }
+
+					#preview .pallet td { width: 32px; height: 32px; }
 				</style>
 				<div id="input">
 					<label for="wad">Select WAD:</label>
 					<input id="wad" type="file" />
 				</div>
-				<ul id="entries"></ul>
+				<table id="entries"></table>
 				<div id="preview"></div>
 			`;
 		}
@@ -51,14 +53,20 @@ customElements.define("wad-reader",
 				const arrayBuffer = await readFile(e.target.files[0]);
 				this.wad = new Wad(arrayBuffer);
 				for(let entry of this.wad.entries){
-					const li = document.createElement("li");
-					li.addEventListener("click", () => this.loadAsset(entry.name));
-					li.innerHTML = `
-						${entry.name},
-						${entry.offset},
-						${entry.size},
-					`;
-					this.dom.entries.appendChild(li);
+					const tr = document.createElement("tr");
+					tr.addEventListener("click", () => this.loadAsset(entry.name));
+					const nameCell = document.createElement("td");
+					nameCell.textContent = entry.name;
+					const offsetCell = document.createElement("td");
+					offsetCell.textContent = entry.offset;
+					const sizeCell = document.createElement("td");
+					sizeCell.textContent = entry.size;
+					
+					tr.appendChild(nameCell);
+					tr.appendChild(offsetCell);
+					tr.appendChild(sizeCell);
+					
+					this.dom.entries.appendChild(tr);
 				}
 			});
 		}
