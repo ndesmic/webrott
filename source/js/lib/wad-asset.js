@@ -1,4 +1,7 @@
 import { getPaddedString } from "./wad-utils.js";
+import "../components/doom-image.js";
+import "../components/rott-image.js";
+import "../components/rott-wall.js";
 
 export function loadAsset(wad, name){
 	const dataView = wad.get(name);
@@ -11,81 +14,33 @@ export function loadAsset(wad, name){
 	if(name === "PNAMES\0\0"){
 		return getPNames(dataView);
 	}
-	if (/WALL/.test(name)) {
-		return getWall(wad, dataView);
+	if (wad.getType() === "rott" && /WALL/.test(name)) {
+		return getRottWall(wad, dataView);
 	}
-	return getDoomImage(wad, dataView);
+	return wad.getType() === "rott"
+		? getRottImage(wad, dataView) 
+		: getDoomImage(wad, dataView);
 }
 
-function getWall(wad, dataView){
-	const pallet = wad.get("PLAYPAL") ?? wad.get("PAL");
-	const canvas = document.createElement("canvas");
-	canvas.height = 64;
-	canvas.width = 64;
-	const context = canvas.getContext("2d");
-	const imageData = context.getImageData(0, 0, 64, 64);
+function getRottWall(wad, dataView){
+	const rottWall = document.createElement("rott-wall");
+	rottWall.setLump(wad, dataView);
 
-	for(let col = 0; col < 64; col++){
-		for(let row = 0; row < 64; row++){
-			const pixelOffset = (col * 64 * 4) + (row * 4);
-			const palletIndex = dataView.getUint8((row * 64) + col);
-			const palletOffset = palletIndex * 3;
-			imageData.data[pixelOffset] =  pallet.getUint8(palletOffset); //red
-			imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-			imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
-			imageData.data[pixelOffset + 3] = 255
-		}
-	}
+	return rottWall;
+}
 
-	context.putImageData(imageData, 0, 0);
+function getRottImage(wad, dataView){
+	const rottImage = document.createElement("rott-image");
+	rottImage.setLump(wad, dataView);
 
-	return canvas;
+	return rottImage;
 }
 
 function getDoomImage(wad, dataView){
-	const pallet = wad.get("PLAYPAL") ?? wad.get("PAL");
-	const width = dataView.getUint16(0, true);
-	const height = dataView.getUint16(2, true);
-	const left = dataView.getUint16(4, true);
-	const top = dataView.getUint16(6, true);
-	const canvas = document.createElement("canvas");
-	canvas.height = height;
-	canvas.width = width;
-	const context = canvas.getContext("2d");
-	const imageData = context.getImageData(0, 0, width, height);
-	const columnOffsets = [];
+	const doomImage = document.createElement("doom-image");
+	doomImage.setLump(wad, dataView);
 
-	for(let col = 0; col < width; col++){
-		columnOffsets[col] = dataView.getUint32(8 + (col * 4), true);
-	}
-	let index = 8 + (width * 4);
-
-	for(let col = 0; col < width; col++){
-		const rowStart = dataView.getUint8(index);
-		if(rowStart === 255) {
-			index++;
-			continue;
-		}
-		const pixelCount = dataView.getUint8(index + 1);
-		index += 3; //advance one more byte because of unused padding
-		for(let row = rowStart; row < rowStart + pixelCount; row++){
-			const pixelOffset = (row * width * 4) + (col * 4);
-			const palletIndex = dataView.getUint8(index);
-			const palletOffset = palletIndex * 3;
-
-			imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-			imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-			imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
-			imageData.data[pixelOffset + 3] = 255
-
-			index++;
-		}
-		index += 2; //advance one more byte because of unused padding (and some 255 value that ends the col)
-	}
-
-	context.putImageData(imageData, 0, 0);
-
-	return canvas;
+	return doomImage;
 }
 
 function getPlayPal(dataView){

@@ -25,10 +25,10 @@ customElements.define("wad-reader",
 			this.shadowRoot.innerHTML = `
 				<link rel="stylesheet" href="css/system.css">
 				<style>
-					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: auto auto; grid-template-areas: "input input" "list preview"; }
-					#entries { grid-area: list; cursor: pointer; }
-					#preview { grid-area: preview; }
-					#preview canvas { width: 640px; height: 640px; image-rendering: pixelated;  }
+					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: 45px minmax(0, calc(100% - 45px)); height: 100%; grid-template-areas: "input input" "list preview"; }
+					#entries-container { grid-area: list; cursor: pointer; overflow-y: auto; }
+					#preview { grid-area: preview; overflow-y: auto; }
+					#preview canvas { image-rendering: pixelated;  }
 					#input { grid-area: input; }
 
 					#preview .pallet td { width: 32px; height: 32px; }
@@ -37,7 +37,9 @@ customElements.define("wad-reader",
 					<label for="wad">Select WAD:</label>
 					<input id="wad" type="file" />
 				</div>
-				<table id="entries"></table>
+				<div id="entries-container">
+					<table id="entries"></table>
+				</div>
 				<div id="preview"></div>
 			`;
 		}

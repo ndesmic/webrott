@@ -30,4 +30,8 @@ export class Wad {
 			? new DataView(this.arrayBuffer, entry.offset, entry.size)
 			: null;
 	}
+	getType(){
+		if(this.get("PAL")) return "rott";
+		if(this.get("PLAYPAL")) return "doom";
+	}
 }
