@@ -26,6 +26,7 @@ Table of Contents
 - [Chapter 10 - Reading Sprites 2: Wolfenstien](10-sprites2.md) (Wolfenstien 3D)
 - [Chapter 11 - Reading Maps 4: Putting it together](11-maps4.md) (Wolfenstien 3D)
 - [Chapter 12 - Performance 1: Map Views](12-perf.md) (Wolfenstien 3D)
+- [Chapter 13 - EXE Compression](13-compression.md) (Blake Stone: Aliens of Gold)
 
 Working with the code
 ---------------------
