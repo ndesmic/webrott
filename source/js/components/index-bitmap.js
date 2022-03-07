@@ -1,4 +1,7 @@
-import { renderIndexedBitmap } from "../lib/image-utils.js";
+import { WorkerDispatcher } from "../lib/worker-dispatcher.js";
+import { imageToCanvas } from "../lib/image-utils.js";
+
+const renderDispatcher = new WorkerDispatcher(new Worker("./js/workers/render-worker.js", { type: "module" }));
 
 export class IndexBitmap extends HTMLElement {
 	static get observedAttributes() {
@@ -27,10 +30,10 @@ export class IndexBitmap extends HTMLElement {
 		const scaleFactor = this.scaleFactor ?? 4;
 		this.shadowRoot.innerHTML = `
 				<style>
-					#canvas canvas { image-rendering: pixelated; width: ${scaleFactor * this.width}px; height: ${scaleFactor * this.height}px }
+					canvas { image-rendering: pixelated; width: ${scaleFactor * this.width}px; height: ${scaleFactor * this.height}px }
 					fieldset { border: none; }
 				</style>
-				<div id="canvas"></div>
+				<div id="canvas-container"></div>
 				<form>
 					<fieldset>
 						<label for="aspect">correct aspect (16:10)</label>
@@ -41,7 +44,7 @@ export class IndexBitmap extends HTMLElement {
 	}
 	updateHeight() {
 		const scaleFactor = this.scaleFactor ?? 4;
-		const canvas = this.dom.canvas.querySelector("canvas");
+		const canvas = this.dom.canvasContainer.querySelector("canvas");
 		
 		if(!canvas) return;
 
@@ -53,7 +56,7 @@ export class IndexBitmap extends HTMLElement {
 	}
 	cacheDom() {
 		this.dom = {
-			canvas: this.shadowRoot.querySelector("#canvas"),
+			canvasContainer: this.shadowRoot.querySelector("#canvas-container"),
 			aspect: this.shadowRoot.querySelector("#aspect")
 		};
 	}
@@ -69,12 +72,12 @@ export class IndexBitmap extends HTMLElement {
 	setPallet(pallet) { //1d array of [red,green,blue]
 		this.pallet = pallet;
 	}
-	renderImage() {
-		const canvas = renderIndexedBitmap(this.bitmap, this.pallet, this.width, this.height);
-		if(this.dom.canvas.childNodes.length > 0){
-			this.dom.canvas.removeChild(this.dom.canvas.firstChild);
+	async renderImage() {
+		const bitmap = await renderDispatcher.dispatch("renderIndexedBitmap", [this.bitmap, this.pallet]);
+		if (this.dom.canvasContainer.childNodes.length > 0){
+			this.dom.canvasContainer.removeChild(this.dom.canvas.firstChild);
 		}
-		this.dom.canvas.appendChild(canvas);
+		this.dom.canvasContainer.appendChild(imageToCanvas(bitmap));
 		this.updateHeight();
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
