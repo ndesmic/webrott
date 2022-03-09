@@ -1,5 +1,4 @@
 import { WorkerDispatcher } from "../lib/worker-dispatcher.js";
-import { loadMap } from "../lib/ted-asset.js";
 import { imageToCanvas } from "../lib/image-utils.js";
 
 const renderDispatcher = new WorkerDispatcher(new Worker("./js/workers/render-worker.js", { type: "module" }));
@@ -17,7 +16,6 @@ export class TedMap extends HTMLElement {
 		element.render = element.render.bind(element);
 		element.setMap = element.setMap.bind(element);
 		element.renderMap = element.renderMap.bind(element);
-		element.renderGrid = element.renderGrid.bind(element);
 	}
 	connectedCallback() {
 		this.render();
@@ -30,10 +28,10 @@ export class TedMap extends HTMLElement {
 				<link rel="stylesheet" href="css/system.css">
 				<style>
 					:host { display: grid; }
-					#table-container { grid-row: 1 / 1; grid-column: 1 / 1; }
+					#table-container { grid-row: 1 / 1; grid-column: 1 / 1;  z-index: 1; }
 					#canvas-container { grid-row: 1 / 1; grid-column: 1 / 1; }
 					table { border-spacing: 0px; }
-					td { padding: 0px; width: 64px; height: 64px; }
+					td { padding: 0px; width: 64px; height: 64px; min-width: 64px; min-height: 64px; text-align: center; }
 				</style>
 				<div id="canvas-container"></div>
 				<div id="table-container"></div>
@@ -56,30 +54,16 @@ export class TedMap extends HTMLElement {
 	}
 	async renderMap() {
 		const start = performance.now();
-		const map = await renderDispatcher.dispatch("renderTedMap", [loadMap(this.map, this.walls.length), this.walls, this.pallet]);
-		const canvas = imageToCanvas(map);
-		this.dom.canvasContainer.appendChild(canvas);
-		this.renderGrid();
+		if(this.walls){
+			const map = await renderDispatcher.dispatch("renderTedMap", [this.map, this.walls, this.pallet]);
+			const canvas = imageToCanvas(map);
+			this.dom.canvasContainer.appendChild(canvas);
+		}
+
+		const table = renderGrid(this.map, !this.walls);
+		this.dom.tableContainer.appendChild(table);
 		const end = performance.now();
 		console.log(`Rendered map in: ${end - start}ms`);
-	}
-	renderGrid(){
-		const table = document.createElement("table");
-
-		for(let row = 0; row < this.map[0].length; row++){
-			const tr = document.createElement("tr");
-
-			for(let col = 0; col < this.map[0][0].length; col++){
-				const td = document.createElement("td");
-				td.dataset.x = col;
-				td.dataset.y = row;
-
-				tr.appendChild(td);
-			}
-
-			table.appendChild(tr);
-		}
-		this.dom.tableContainer.appendChild(table);
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
 		this[name] = newValue;
@@ -87,3 +71,31 @@ export class TedMap extends HTMLElement {
 }
 
 customElements.define("ted-map", TedMap);
+
+function renderGrid(map, isSkeleton = false){
+	const table = document.createElement("table");
+
+	for (let row = 0; row < map.length; row++) {
+		const tr = document.createElement("tr");
+
+		for (let col = 0; col < map[0].length; col++) {
+			const td = document.createElement("td");
+			const value = map[row][col];
+			td.dataset.x = col;
+			td.dataset.y = row;
+			td.dataset.value = value;
+			if(isSkeleton){
+				if(value && value < 89){
+					td.style.backgroundColor = "#000";
+					td.style.color = "#fff";
+					td.textContent = value;
+				}
+			}
+
+			tr.appendChild(td);
+		}
+
+		table.appendChild(tr);
+	}
+	return table;
+}

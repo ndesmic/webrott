@@ -27,6 +27,8 @@ Table of Contents
 - [Chapter 11 - Reading Maps 4: Putting it together](11-maps4.md) (Wolfenstien 3D)
 - [Chapter 12 - Performance 1: Map Views](12-perf.md) (Wolfenstien 3D)
 - [Chapter 13 - EXE Compression](13-compression.md) (Blake Stone: Aliens of Gold)
+- [Chapter 14 - Reading Pallets 2: EXE Compression, Binary Diffing, and Pallet Sniffing](14-pallets2.md) (Blake Stone: Aliens of Gold)
+- [Chapter 15 - Reading Maps 5: ROTT Textures](15-maps5.md) (Blake Stone: AOG, ROTT)
 
 Working with the code
 ---------------------

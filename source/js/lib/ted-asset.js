@@ -1,6 +1,7 @@
 import { allocBlockArray } from "./array-utils.js";
 import { IndexBitmap } from "../components/index-bitmap.js";
-import { wolfPallet, loadSprite } from "../lib/wolf-asset.js";
+import { wolfPallet, loadSprite, wolfExtensions } from "../lib/wolf-asset.js";
+import { blakePallet, blakeExtensions } from "../lib/blake-asset.js"; 
 
 export function loadAsset(file, name, type){
 	const asset = file.getAsset(name);
@@ -10,7 +11,11 @@ export function loadAsset(file, name, type){
 			element.height = 64;
 			element.width = 64;
 			element.setBitmap(loadWall(asset));
-			element.setPallet(wolfPallet);
+			if(wolfExtensions.includes(file.extension)){
+				element.setPallet(wolfPallet);
+			} else if(blakeExtensions.includes(file.extension)){
+				element.setPallet(blakePallet);
+			}
 			return element;
 		}
 		case "sprite": {
@@ -18,7 +23,11 @@ export function loadAsset(file, name, type){
 			element.height = 64;
 			element.width = 64;
 			element.setBitmap(loadSprite(asset, file.arrayBuffer));
-			element.setPallet(wolfPallet);
+			if (wolfExtensions.includes(file.extension)) {
+				element.setPallet(wolfPallet);
+			} else if (blakeExtensions.includes(file.extension)) {
+				element.setPallet(blakePallet);
+			}
 			return element;
 		}
 	}
@@ -46,34 +55,4 @@ export function loadWall(asset){
 	}
 
 	return bitmap;
-}
-
-export function loadMap(map, numberOfTiles) {
-	const height = map[0].length;
-	const width = map[0][0].length;
-	const tileMap = allocBlockArray(height, width);
-
-	for (let row = 0; row < height; row++) {
-		for (let col = 0; col < width; col++) {
-			const value = map[0][row][col];
-
-			if (value < 64) { //wall
-				tileMap[row][col] = (value - 1) * 2;
-			} else if (value === 90) { //door e/w
-				tileMap[row][col] = numberOfTiles - 7;
-			} else if (value === 91) {  //door n/s
-				tileMap[row][col] = numberOfTiles - 8;
-			} else if (value === 92 || value === 94) { //gold / silver door n/s
-				tileMap[row][col] = numberOfTiles - 2;
-			} else if (value === 93 || value === 95) { //gold / silver door e/w
-				tileMap[row][col] = numberOfTiles;
-			} else if (value === 100) { //elevator door n/s
-				tileMap[row][col] = numberOfTiles - 3;
-			} else if (value === 101) { //elevator door e/w
-				tileMap[row][col] = numberOfTiles - 4;
-			}
-		}
-	}
-
-	return tileMap;
 }

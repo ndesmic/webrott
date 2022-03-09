@@ -1,4 +1,5 @@
 export function renderIndexedBitmap(bitmap, pallet, offScreen = false){
+	if(bitmap == null) return null;
 	const height = bitmap.length;
 	const width = bitmap[0].length;
 

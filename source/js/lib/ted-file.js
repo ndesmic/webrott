@@ -4,8 +4,9 @@ import { allocBlockArray, writeBlockSequential } from "./array-utils.js";
 const numMaps = 100;
 
 export class VswapFile {
-	constructor(arrayBuffer){
+	constructor(arrayBuffer, extension){
 		this.arrayBuffer = arrayBuffer;
+		this.extension = extension;
 		this.dataView = new DataView(this.arrayBuffer);
 		this.chunksInFile = this.dataView.getUint16(0, true);
 		this.spriteStart = this.dataView.getUint16(2, true);
@@ -62,8 +63,9 @@ export class MapHeadFile {
 }
 
 export class GameMapsFile {
-	constructor(arrayBuffer, mapHeadFile, carmackCompressed = true) {
+	constructor(arrayBuffer, mapHeadFile, extension, carmackCompressed = true) {
 		this.dataView = new DataView(arrayBuffer);
+		this.extension = extension;
 		this.carmackCompressed = carmackCompressed;
 		this.signature = getString(this.dataView, 0, 8);
 		this.mapHeadFile = mapHeadFile;
@@ -89,12 +91,14 @@ export class GameMapsFile {
 	}
 	getMap(mapNum) {
 		const map = this.maps[mapNum];
-		const layers = new Array(3);
+		const layerCount = map.planeLength.filter(p => p !== 0).length;
+		const layers = new Array(layerCount);
 
-		for (let layerIndex = 0; layerIndex < 3; layerIndex++) {
+		for (let layerIndex = 0; layerIndex < layerCount; layerIndex++) {
 			const planeStart = map.planeStart[layerIndex];
 			const planeLength = map.planeLength[layerIndex];
-			const layer = allocBlockArray(64, 64);
+
+			const layer = allocBlockArray(map.height, map.width);
 			const decompressedLength = this.dataView.getUint16(planeStart, true);
 			const compressedData = this.dataView.buffer.slice(planeStart + 2, planeStart + planeLength);
 			let decompressedData;

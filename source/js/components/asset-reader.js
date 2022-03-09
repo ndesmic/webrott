@@ -1,4 +1,5 @@
 import { readFile, getExtension, getName } from "../lib/file-utils.js";
+import { IndexBitmap } from "./index-bitmap.js";
 import "./tab-set.js";
 
 const tedMapNames = ["gamemaps", "maptemp"];
@@ -30,14 +31,14 @@ function renderEntry(file, fileType, entry, index, loader){
 			tr.addEventListener("click", () => loader(file, "vswap", index, entry.type));
 			break;
 		}
-		case "rtl": {
+		case "rott-level": {
 			tr.appendChild(renderCell(entry.name));
-			tr.addEventListener("click", () => loader(file, "rtl", index));
+			tr.addEventListener("click", () => loader(file, "rott-level", index));
 			break;
 		}
 		case "gamemaps": {
 			tr.appendChild(renderCell(entry.name));
-			tr.addEventListener("click", () => loader(file, "wolf-map", index));
+			tr.addEventListener("click", () => loader(file, "ted-map", index));
 			break;
 		}
 	}
@@ -108,6 +109,7 @@ export class AssetReader extends HTMLElement {
 	}
 	async onFileSelected(e) {
 		this.dom.entries.innerHTML = "";
+		this.dom.maps.innerHTML = "";
 		const files = Array.from(e.target.files);
 		this.files = new Map();
 
@@ -121,8 +123,8 @@ export class AssetReader extends HTMLElement {
 			const frag = document.createDocumentFragment();
 
 			if (extension === "wad") {
-				const { Wad } = await import("../lib/wad.js");
-				const wadFile = new Wad(arrayBuffer);
+				const { WadFile } = await import("../lib/wad-file.js");
+				const wadFile = new WadFile(arrayBuffer);
 				this.files.set("wad", wadFile);
 				wadFile.entries
 					.map((entry, index) => renderEntry(wadFile, "wad", entry, index, this.loadAsset))
@@ -130,18 +132,18 @@ export class AssetReader extends HTMLElement {
 				this.dom.entries.appendChild(frag);
 			} else if (name === "vswap") {
 				const { VswapFile } = await import("../lib/ted-file.js");
-				const vswapFile = new VswapFile(arrayBuffer);
+				const vswapFile = new VswapFile(arrayBuffer, extension);
 				this.files.set("vswap", vswapFile);
 				vswapFile.entries
 					.map((entry, index) => renderEntry(vswapFile, "vswap", entry, index, this.loadAsset))
 					.forEach(tr => frag.appendChild(tr));
 				this.dom.entries.appendChild(frag);
 			} else if (["rtl", "rtc"].includes(extension)) {
-				const { RtlFile } = await import("../lib/rtl-file.js");
-				const rtlFile = new RtlFile(arrayBuffer);
-				this.files.set("rott-map", rtlFile);
-				rtlFile.maps
-					.map((map, index) => renderEntry(rtlFile, "rtl", map, index, this.loadAsset))
+				const { RottMapFile } = await import("../lib/rott-map-file.js");
+				const rottMapFile = new RottMapFile(arrayBuffer);
+				this.files.set("rott-map", rottMapFile);
+				rottMapFile.maps
+					.map((map, index) => renderEntry(rottMapFile, "rott-level", map, index, this.loadAsset))
 					.forEach(tr => frag.appendChild(tr));
 				this.dom.maps.appendChild(frag);
 			} else if (tedMapNames.includes(name)) {
@@ -150,7 +152,7 @@ export class AssetReader extends HTMLElement {
 				if (headerFile) {
 					const camackCompressed = name === "gamemaps";
 					const headerArrayBuffer = await readFile(headerFile);
-					const mapFile = new GameMapsFile(arrayBuffer, new MapHeadFile(headerArrayBuffer), camackCompressed);
+					const mapFile = new GameMapsFile(arrayBuffer, new MapHeadFile(headerArrayBuffer), extension, camackCompressed);
 					this.files.set("gamemaps", mapFile);
 					mapFile.maps
 						.map((map, index) => renderEntry(mapFile, "gamemaps", map, index, this.loadAsset))
@@ -179,24 +181,56 @@ export class AssetReader extends HTMLElement {
 				this.dom.preview.appendChild(loadAsset(file, assetId, assetType));
 				break;
 			}
-			case "rtl": {
-				const { RottMap } = await import("./rott-map.js");
-
-				const rottMap = new RottMap();
-				rottMap.setMap(file.getMap(assetId));
-				this.dom.preview.appendChild(rottMap);
-				break;
-			}
-			case "wolf-map": {
+			case "rott-level": {
 				const { TedMap } = await import("./ted-map.js");
-				const { wolfPallet } = await import("../lib/wolf-asset.js");
-				const { extractWalls } = await import("../lib/ted-asset.js");
+				const { extractWalls, extractStaticDoorEntries, getPallets, loadMap } = await import("../lib/rott-asset.js");
+				const wad = this.files.get("wad");
+				let walls;
+				let doors;
 
 				const tedMap = new TedMap();
-				tedMap.setMap(file.getMap(assetId));
+
+				if (wad) {
+					walls = extractWalls(wad);
+					doors = extractStaticDoorEntries(wad);
+					const doorIndexMap = Object.fromEntries(doors.map(([key, value], index) => [key, index]));
+					tedMap.setMap(loadMap(file.getMap(assetId), walls.length, doorIndexMap));
+					const doorTextures = doors.map(([key, value]) => value);
+					tedMap.setWallBitmaps([...walls, ...doorTextures]);
+					tedMap.setPallet(getPallets(wad)[0]);
+				} else {
+					tedMap.setMap(loadMap(file.getMap(assetId)));
+				}
+
+				/*
+				for(let x of tedMap.walls){
+					const b = new IndexBitmap();
+					b.height = 64;
+					b.width = 64;
+					b.setBitmap(x);
+					b.setPallet(tedMap.pallet);
+					this.dom.preview.appendChild(b)
+				}*/
+
+				this.dom.preview.appendChild(tedMap);
+				break;
+			}
+			case "ted-map": {
+				const { TedMap } = await import("./ted-map.js");
+				const { wolfPallet, loadMap } = await import("../lib/wolf-asset.js");
+				const { blakePallet, blakeExtensions } = await import("../lib/blake-asset.js");
+				const { extractWalls } = await import("../lib/ted-asset.js");
+
+				const isBlake = blakeExtensions.includes(file.extension);
+
+				const tedMap = new TedMap();
+				tedMap.setMap(loadMap(file.getMap(assetId)));
 				const vswap = this.files.get("vswap");
 				tedMap.setWallBitmaps(vswap ? extractWalls(vswap) : null);
-				tedMap.setPallet(wolfPallet);
+				tedMap.setPallet(
+					 isBlake
+						? blakePallet
+						: wolfPallet);
 				this.dom.preview.appendChild(tedMap);
 				break;
 			}

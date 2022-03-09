@@ -1,25 +1,30 @@
-import { getString } from "./file-utils.js";
+import { getString, trimString } from "./file-utils.js";
 import { loadWall as loadTedWall } from "../lib/ted-asset.js";
 import { IndexBitmap } from "../components/index-bitmap.js"
 import { loadSprite as loadRottSprite } from "./rott-asset.js";
 import { loadImage as loadDoomImage } from "./doom-asset.js";
 
 export function loadAsset(wad, name){
-	const dataView = wad.get(name);
+	name = trimString(name);
+	const dataView = wad.getByName(name);
 	if(dataView.byteLength === 0) return getNullAsset();
 	if(name === "COLORMAP"){
 		return getColorMap(wad, dataView);
 	}
-	if(name === "PLAYPAL\0" || name === "PAL\0\0\0\0\0"){
+	if(name === "PLAYPAL" || name === "PAL"){
 		return getPlayPal(dataView);
 	}
-	if(name === "PNAMES\0\0"){
+	if(name === "PNAMES"){
 		return getPNames(dataView);
 	}
-	if(name === "CHNGLG\0\0"){
+	if(name === "CHNGLG"){
 		return getChangeLog(dataView);
 	}
-	if (wad.getType() === "rott" && /WALL/.test(name)) {
+	//Very hacky but wall names are not consistent
+	if (
+		(wad.getType() === "rott" && /WALL/.test(name))
+		|| (wad.getType() === "rott" && /DOOR\d?$/.test(name) && !/RAMDOOR[2-9]/.test(name) && !/TRIDOOR[2-9]/.test(name))
+	) {
 		return getRottWall(wad, dataView);
 	}
 	return wad.getType() === "rott"
@@ -35,7 +40,7 @@ function getNullAsset(){
 
 function getRottWall(wad, dataView){
 	const bitmap = loadTedWall(dataView);
-	const pallets = getPallets(wad.get("PAL"));
+	const pallets = extractPallets(wad.getByName("PAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
@@ -48,7 +53,7 @@ function getRottWall(wad, dataView){
 
 function getRottImage(wad, dataView){
 	const bitmap = loadRottSprite(dataView);
-	const pallets = getPallets(wad.get("PAL"));
+	const pallets = extractPallets(wad.getByName("PAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
@@ -61,7 +66,7 @@ function getRottImage(wad, dataView){
 
 function getDoomImage(wad, dataView){
 	const bitmap = loadDoomImage(dataView);
-	const pallets = getPallets(wad.get("PLAYPAL"));
+	const pallets = extractPallets(wad.getByName("PLAYPAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
@@ -72,7 +77,7 @@ function getDoomImage(wad, dataView){
 	return indexBitmap;
 }
 
-function getPallets(dataView){
+export function extractPallets(dataView){
 	const mapCount = dataView.byteLength / 768;
 	const pallets = new Array(mapCount);
 
@@ -130,7 +135,7 @@ function getPlayPal(dataView){
 
 function getColorMap(wad, dataView){
 	//get base pallet
-	const playPal = wad.get("PLAYPAL") ?? wad.get("PAL");
+	const playPal = wad.get("PLAYPAL") ?? wad.getByName("PAL");
 	const mapCount = dataView.byteLength / 256;
 	const ul = document.createElement("ul");
 
