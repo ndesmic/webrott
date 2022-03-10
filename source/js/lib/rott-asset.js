@@ -42,6 +42,46 @@ export function loadSprite(asset) {
 	return bitmap;
 }
 
+export function loadTransparentSprite(asset) {
+	const dataView = asset instanceof DataView ? asset : new DataView(asset);
+
+	const origSize = dataView.getUint16(0, true);
+	const width = dataView.getUint16(2, true);
+	const height = dataView.getUint16(4, true);
+	const left = dataView.getUint16(6, true);
+	const top = dataView.getUint16(8, true);
+	const transparency = dataView.getUint16(10, true)
+	const columnOffsets = new Array(width);
+
+	for (let col = 0; col < width; col++) {
+		columnOffsets[col] = dataView.getUint16(12 + (col * 2), true);
+	}
+	let index = 12 + (width * 2);
+
+	const bitmap = allocBlockArray(width, height);
+
+	for (let col = 0; col < width; col++) {
+		while (true) {
+			let rowStart = dataView.getUint8(index);
+			index += 1;
+			if (rowStart === 255) break;
+
+			const pixelCount = dataView.getUint8(index);
+			index += 1;
+
+			//draw post spans
+			for (let row = rowStart; row < rowStart + pixelCount; row++) {
+				const palletIndex = dataView.getUint8(index);
+				index += 1;
+
+				bitmap[row][col] = palletIndex;
+			}
+		}
+	}
+
+	return bitmap;
+}
+
 export function extractWalls(wad) {
 	let isWalls = false;
 	const walls = [];
@@ -98,7 +138,7 @@ export function loadMap(map, wallTextureCount = 105, doorTextureMap) {
 			if(value >= 1 && value <= 32){
 				tileMap[row][col] = value - 1;
 			} else if(value >= 33 && value <= 35){ //snake door
-				tileMap[row][col] = wallTextureCount + doorTextureMap[doorIndexToName((value - 33) + 15)];
+				tileMap[row][col] = doorTextureMap ? wallTextureCount + doorTextureMap[doorIndexToName((value - 33) + 15)] : value;
 			} else if(value >= 36 && value <= 45){
 				tileMap[row][col] = value - 4;
 			} else if(value === 46){
@@ -108,9 +148,9 @@ export function loadMap(map, wallTextureCount = 105, doorTextureMap) {
 			} else if (value >= 80 && value <= 89){
 				tileMap[row][col] = value - 16;
 			} else if (value >= 90 && value <= 104){ //doors
-				tileMap[row][col] = wallTextureCount + doorTextureMap[doorIndexToName((value - 90))];
+				tileMap[row][col] = doorTextureMap ?wallTextureCount + doorTextureMap[doorIndexToName((value - 90))] : value;
 			} else if (value >= 154 && value <= 156){ //doors
-				tileMap[row][col] = wallTextureCount + doorTextureMap[doorIndexToName((value - 154) + 18)];
+				tileMap[row][col] = doorTextureMap ?wallTextureCount + doorTextureMap[doorIndexToName((value - 154) + 18)] : value;
 			}
 		}
 	}

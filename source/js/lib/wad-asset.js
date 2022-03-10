@@ -1,8 +1,12 @@
 import { getString, trimString } from "./file-utils.js";
 import { loadWall as loadTedWall } from "../lib/ted-asset.js";
 import { IndexBitmap } from "../components/index-bitmap.js"
-import { loadSprite as loadRottSprite } from "./rott-asset.js";
+import { 
+	loadSprite as loadRottSprite, 
+	loadTransparentSprite as loadRottTransparentSprite 
+} from "./rott-asset.js";
 import { loadImage as loadDoomImage } from "./doom-asset.js";
+import { multiTry } from "./exception-utils.js";
 
 export function loadAsset(wad, name){
 	name = trimString(name);
@@ -20,15 +24,9 @@ export function loadAsset(wad, name){
 	if(name === "CHNGLG"){
 		return getChangeLog(dataView);
 	}
-	//Very hacky but wall names are not consistent
-	if (
-		(wad.getType() === "rott" && /WALL/.test(name))
-		|| (wad.getType() === "rott" && /DOOR\d?$/.test(name) && !/RAMDOOR[2-9]/.test(name) && !/TRIDOOR[2-9]/.test(name))
-	) {
-		return getRottWall(wad, dataView);
-	}
+
 	return wad.getType() === "rott"
-		? getRottImage(wad, dataView) 
+		? getRottImageAsset(wad, dataView) 
 		: getDoomImage(wad, dataView);
 }
 
@@ -36,6 +34,22 @@ function getNullAsset(){
 	const div = document.createElement("div");
 	div.textContent = "Asset is null";
 	return div;
+}
+
+function getRottImageAsset(wad, dataView){
+	if(dataView.buffer.byteLength === 4096){
+		return multiTry(
+			() => getRottWall(wad, dataView),
+			() => getRottImage(wad, dataView),
+			() => getRottTransparentImage(wad, dataView)
+		);
+	} else {
+		return multiTry(
+			() => getRottImage(wad, dataView),
+			() => getRottTransparentImage(wad, dataView),
+			() => getRottWall(wad, dataView)
+		);
+	}
 }
 
 function getRottWall(wad, dataView){
@@ -53,6 +67,19 @@ function getRottWall(wad, dataView){
 
 function getRottImage(wad, dataView){
 	const bitmap = loadRottSprite(dataView);
+	const pallets = extractPallets(wad.getByName("PAL"));
+
+	const indexBitmap = new IndexBitmap();
+	indexBitmap.setBitmap(bitmap);
+	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.height = bitmap.length;
+	indexBitmap.width = bitmap[0].length;
+
+	return indexBitmap;
+}
+
+function getRottTransparentImage(wad, dataView) {
+	const bitmap = loadRottTransparentSprite(dataView);
 	const pallets = extractPallets(wad.getByName("PAL"));
 
 	const indexBitmap = new IndexBitmap();

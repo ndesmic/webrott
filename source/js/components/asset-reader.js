@@ -1,6 +1,6 @@
 import { readFile, getExtension, getName } from "../lib/file-utils.js";
-import { IndexBitmap } from "./index-bitmap.js";
 import "./tab-set.js";
+import "./split-panel.js";
 
 const tedMapNames = ["gamemaps", "maptemp"];
 const tedMapHeaderNames = ["mapthead", "maphead"];
@@ -71,31 +71,32 @@ export class AssetReader extends HTMLElement {
 		this.shadowRoot.innerHTML = `
 				<link rel="stylesheet" href="./css/system.css">
 				<style>
-					:host{ display: grid; grid-template-columns: 50% 50%; grid-template-rows: 45px minmax(0, calc(100% - 45px)); height: 100%; grid-template-areas: "input input" "list preview"; }
-					#tabs { overflow-y: auto; }
+					:host{ display: grid; grid-template-rows: auto 1fr; block-size: 100%; }
 					#entries-container { grid-area: list; }
-					#preview { grid-area: preview; overflow-y: auto; }
 					#preview canvas { image-rendering: pixelated;  }
-					#input { grid-area: input; }
-					#entries tr, #maps tr { cursor: pointer; }
-
-					#preview .pallet td { width: 32px; height: 32px; }
+					#input { grid-row: 1 / 2 }
+					#entries tr, #maps tr { cursor: pointer; }s
+					#preview .pallet td { inline-size: 32px; block-size: 32px; }
+					split-panel { inline-size: 100%; grid-row: 2 / 3; overflow: auto; --first-size: 325px; }
+					split-panel::part(median) { inline-size: 0.25rem; }
 				</style>
 				<div id="input">
 					<label for="assets">Select WAD or VSWAP:</label>
 					<input id="assets" type="file" multiple />
 				</div>
-				<tab-set id="tabs">
-					<div slot="tabs">Content</div>
-					<div id="entries-container" slot="panels">
-						<table id="entries"></table>
-					</div>
-					<div slot="tabs">Maps</div>
-					<div id="maps-container" slot="panels">
-						<table id="maps"></table>
-					</div>
-				</tab-set>
-				<div id="preview"></div>
+				<split-panel>
+					<tab-set id="tabs" slot="1">
+						<div slot="tabs">Content</div>
+						<div id="entries-container" slot="panels">
+							<table id="entries"></table>
+						</div>
+						<div slot="tabs">Maps</div>
+						<div id="maps-container" slot="panels">
+							<table id="maps"></table>
+						</div>
+					</tab-set>
+					<div id="preview" slot="2"></div>
+				</split-panel>
 			`;
 	}
 	cacheDom() {

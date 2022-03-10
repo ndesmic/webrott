@@ -234,7 +234,7 @@ Note on File Conventions
 
 As I work I'm starting to see the limitations of my file naming convention.  I've renamed things to have more of a common convention. Until I find a better one, to keep things straight the idea is this:  `{game}-asset.js` are high-level functions unique to a particular game, they may call into the mid-level `{wad/ted}-asset.js` which has things that are common to TED or WAD files.  Finally, `rott-map-file` (formerly `rtl-file` but that was a bad convention due to RTC files), `ted-file` and `wad-file` (formaly `wad`) are for raw entry extraction and file metadata, and they are always suffixed with "File" and can be directly used by anything down the chain.
 
-![file-relations](file-relations.png)
+![A graph of the file relations](images/chapter15/file-relations.png)
 
 Aside: Bugs
 -----------
