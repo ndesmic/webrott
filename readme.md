@@ -29,8 +29,8 @@ Table of Contents
 - [Chapter 13 - EXE Compression](13-compression.md) (Blake Stone: Aliens of Gold)
 - [Chapter 14 - Reading Pallets 2: EXE Compression, Binary Diffing, and Pallet Sniffing](14-pallets2.md) (Blake Stone: Aliens of Gold)
 - [Chapter 15 - Reading Maps 5: ROTT Textures](15-maps5.md) (Blake Stone: AOG, ROTT)
-- [Chapter 16 - Masked Walls](16-walls4.md) (ROTT)
-- [Chapter 17 - Masked Walls 2](17-walls5.md) (ROTT)
+- [Chapter 16 - Masked Walls](16-masked-walls.md) (ROTT)
+- [Chapter 17 - Masked Walls 2](17-masked-walls2.md) (ROTT)
 
 Working with the code
 ---------------------
