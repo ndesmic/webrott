@@ -1,4 +1,4 @@
-Walls 4 - Masked Walls
+Masked Walls
 ======================
 
 First I cleaned up the UI a little bit.  One of the nagging problems was that the list of assets was the same size as the preview window, which didn't make sense.  I updated it with the `split-panel` control.  This is also built from scratch though I've pulled the details out into it's own [blog post](https://dev.to/ndesmic/how-to-make-a-resizable-panel-control-with-web-components-2cpa).  Now the spacing makes more sense and you can resize the panels, much better!
