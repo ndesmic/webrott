@@ -47,11 +47,12 @@ export function imageToCanvas(image){
 	return canvas;
 }
 
-export function renderTiledMap(map, tiles, tileSize, offScreen = true){
+export function renderTiledMap(map, tiles, transforms, tileSize, offScreen = true){
 	const height = map.length;
 	const width = map[0].length;
 	const pixelHeight = height * tileSize;
 	const pixelWidth = width * tileSize;
+	const halfTile = tileSize / 2;
 
 	let canvas;
 	if (offScreen) {
@@ -69,7 +70,51 @@ export function renderTiledMap(map, tiles, tileSize, offScreen = true){
 			const tile = tiles[map[row][col]];
 
 			if (tile) {
-				context.drawImage(tile, col * tileSize, row * tileSize);
+				if (transforms && transforms[row][col] != undefined){
+
+					context.save();
+					context.translate(col * tileSize, row * tileSize);
+
+					switch (transforms[row][col]){
+						case 0: {
+							context.drawImage(tile, col * tileSize, row * tileSize);
+							break;
+						}
+						case 1: {
+							context.translate(halfTile, halfTile);
+							context.rotate(Math.PI * 0.5);
+							context.translate(-halfTile, -halfTile);
+							break;
+						}
+						case 2: {
+							context.translate(halfTile, halfTile);
+							context.rotate(Math.PI);
+							context.translate(-halfTile, -halfTile);
+							break;
+						}
+						case 3: {
+							context.translate(halfTile, halfTile);
+							context.rotate(Math.PI * 1.5);
+							context.translate(-halfTile, -halfTile);
+							break;
+						}
+						case 4: {
+							context.translate(tileSize, 0);
+							context.scale(-1, 1);
+							break;
+						}
+						case 5: {
+							context.translate(0, tileSize);
+							context.scale(1, -1);
+							break;
+						}
+					}
+
+					context.drawImage(tile, 0, 0);
+					context.restore();
+				} else {
+					context.drawImage(tile, col * tileSize, row * tileSize);
+				}
 			}
 		}
 	}

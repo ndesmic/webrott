@@ -1,8 +1,8 @@
 import { renderIndexedBitmap, renderTiledMap } from "../lib/image-utils.js";
 
-function renderTedMap(map, walls, pallet){
+function renderTileMap(map, walls, transforms, pallet, tileSize){
 	const renderedWalls = walls.map(w => renderIndexedBitmap(w, pallet, true));
-	return renderTiledMap(map, renderedWalls, 64);
+	return renderTiledMap(map, renderedWalls, transforms, tileSize);
 }
 
 self.onmessage = e => {
@@ -16,8 +16,8 @@ self.onmessage = e => {
 			}, [indexedBitmap]);
 			break;
 		}
-		case "renderTedMap": {
-			const map = renderTedMap(...e.data.args).transferToImageBitmap();
+		case "renderTileMap": {
+			const map = renderTileMap(...e.data.args).transferToImageBitmap();
 			self.postMessage({
 				name: "result",
 				id: e.data.id,
