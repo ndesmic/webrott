@@ -27,7 +27,7 @@ export class TabSet extends HTMLElement {
 					#tabs { grid-row: tabs / tab-panels; display: flex; cursor: pointer; user-select: none; border-bottom: 1px solid #000; }
 					#tabs ::slotted(*) { padding: 0.5rem; background: #efefef; display: flex; align-items: center; }
 					#tabs ::slotted(.selected) { border: 1px solid #000; border-bottom: none; background: #fff; top: 1px; }
-					#tab-panels { grid-row: tab-panels; }
+					#tab-panels { grid-row: tab-panels; block-size: 100%; overflow: hidden; }
 					#tab-panels ::slotted(*) { display: none; padding: 0.5rem; }
 					#tab-panels ::slotted(.selected) { display: block; }
 				</style>

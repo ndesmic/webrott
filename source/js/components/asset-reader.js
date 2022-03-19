@@ -1,6 +1,6 @@
 import { readFile, getExtension, getName } from "../lib/file-utils.js";
 import "./tab-set.js";
-import "./split-panel.js";
+import "./wc-split-panel.js";
 
 const tedMapNames = ["gamemaps", "maptemp"];
 const tedMapHeaderNames = ["mapthead", "maphead"];
@@ -72,31 +72,38 @@ export class AssetReader extends HTMLElement {
 				<link rel="stylesheet" href="./css/system.css">
 				<style>
 					:host{ display: grid; grid-template-rows: auto 1fr; block-size: 100%; }
-					#entries-container { grid-area: list; }
+					#entries-container { grid-area: list; overflow: auto; block-size: 100%; }
 					#preview canvas { image-rendering: pixelated;  }
-					#input { grid-row: 1 / 2 }
+					#input { padding: 0.5rem; grid-row: 1; }
 					#entries tr, #maps tr { cursor: pointer; }s
 					#preview .pallet td { inline-size: 32px; block-size: 32px; }
-					split-panel { inline-size: 100%; grid-row: 2 / 3; overflow: auto; --first-size: 325px; }
-					split-panel::part(median) { inline-size: 0.25rem; }
+					wc-split-panel { inline-size: 100%; grid-row: 2 / 3; --first-size: 325px; overflow: hidden; }
+					wc-split-panel::part(median) { inline-size: 0.25rem; }
+					#panel-left { block-size: 100%; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+					#tabs { grid-row: 2; overflow: hidden; }
+
+					#preview { block-size: 100%; inline-size: 100%; overflow: hidden; }
+					#preview ted-map { block-size: 100%; inline-size: 100%; overflow: hidden; }
 				</style>
-				<div id="input">
-					<label for="assets">Select WAD or VSWAP:</label>
-					<input id="assets" type="file" multiple />
-				</div>
-				<split-panel>
-					<tab-set id="tabs" slot="1">
-						<div slot="tabs">Content</div>
-						<div id="entries-container" slot="panels">
-							<table id="entries"></table>
+				<wc-split-panel>
+					<div id="panel-left" slot="1">
+						<div id="input">
+							<label for="assets">Select WAD or VSWAP:</label>
+							<input id="assets" type="file" multiple />
 						</div>
-						<div slot="tabs">Maps</div>
-						<div id="maps-container" slot="panels">
-							<table id="maps"></table>
-						</div>
-					</tab-set>
+						<tab-set id="tabs">
+							<div slot="tabs">Content</div>
+							<div id="entries-container" slot="panels">
+								<table id="entries"></table>
+							</div>
+							<div slot="tabs">Maps</div>
+							<div id="maps-container" slot="panels">
+								<table id="maps"></table>
+							</div>
+						</tab-set>
+					</div>
 					<div id="preview" slot="2"></div>
-				</split-panel>
+				</wc-split-panel>
 			`;
 	}
 	cacheDom() {
@@ -183,56 +190,74 @@ export class AssetReader extends HTMLElement {
 				break;
 			}
 			case "rott-level": {
-				const { TedMap } = await import("./ted-map.js");
-				const { extractWalls, extractStaticDoorEntries, getPallets, loadMap } = await import("../lib/rott-asset.js");
+				const { WcTileMap } = await import("./wc-tile-map.js");
+				const { WcPanBox } = await import("./wc-pan-box.js");
+				const { 
+					extractWalls, 
+					extractStaticDoorEntries,
+					extractMaskedWallEntries,
+					extractHimaskEntries, 
+					extractExitEntries, 
+					getPallets, 
+					loadMap 
+				} = await import("../lib/rott-asset.js");
 				const wad = this.files.get("wad");
-				let walls;
-				let doors;
 
-				const tedMap = new TedMap();
+				const tileMap = new WcTileMap();
+				tileMap["tile-size"] = 64;
 
 				if (wad) {
-					walls = extractWalls(wad);
-					doors = extractStaticDoorEntries(wad);
+					const walls = extractWalls(wad);
+					const doors = extractStaticDoorEntries(wad);
+					const maskedWalls = extractMaskedWallEntries(wad);
+					const hiMaskedWalls = extractHimaskEntries(wad);
+					const exits = extractExitEntries(wad);
+
 					const doorIndexMap = Object.fromEntries(doors.map(([key, value], index) => [key, index]));
-					tedMap.setMap(loadMap(file.getMap(assetId), walls.length, doorIndexMap));
+					const maskedIndexMap = Object.fromEntries([...hiMaskedWalls, ...maskedWalls, ...exits].map(([key, value], index) => [key, index]));
+
+					const [map, transforms] = loadMap(file.getMap(assetId), walls.length, doorIndexMap, maskedIndexMap)
+					tileMap.map = map;
+					tileMap.transforms = transforms;
 					const doorTextures = doors.map(([key, value]) => value);
-					tedMap.setWallBitmaps([...walls, ...doorTextures]);
-					tedMap.setPallet(getPallets(wad)[0]);
+					const hiMaskedWallTextures = hiMaskedWalls.map(([key, value]) => value);
+					const maskedWallTextures = maskedWalls.map(([key, value]) => value);
+					const exitTextures = exits.map(([key, value]) => value);
+					tileMap.tiles = [...walls, ...doorTextures, ...hiMaskedWallTextures, ...maskedWallTextures, ...exitTextures];
+					tileMap.pallet = getPallets(wad)[0];
 				} else {
-					tedMap.setMap(loadMap(file.getMap(assetId)));
+					const [map, _] = loadMap(file.getMap(assetId));
+					tileMap.map = map;
 				}
 
-				/*
-				for(let x of tedMap.walls){
-					const b = new IndexBitmap();
-					b.height = 64;
-					b.width = 64;
-					b.setBitmap(x);
-					b.setPallet(tedMap.pallet);
-					this.dom.preview.appendChild(b)
-				}*/
+				const panBox = new WcPanBox();
+				panBox.append(tileMap);
 
-				this.dom.preview.appendChild(tedMap);
+				this.dom.preview.appendChild(panBox);
 				break;
 			}
 			case "ted-map": {
-				const { TedMap } = await import("./ted-map.js");
+				const { WcTileMap } = await import("./wc-tile-map.js");
+				const { WcPanBox } = await import("./wc-pan-box.js");
 				const { wolfPallet, loadMap } = await import("../lib/wolf-asset.js");
 				const { blakePallet, blakeExtensions } = await import("../lib/blake-asset.js");
 				const { extractWalls } = await import("../lib/ted-asset.js");
 
 				const isBlake = blakeExtensions.includes(file.extension);
 
-				const tedMap = new TedMap();
-				tedMap.setMap(loadMap(file.getMap(assetId)));
+				const tileMap = new WcTileMap();
+				tileMap["tile-size"] = 64;
+
+				const map = loadMap(file.getMap(assetId));
+				tileMap.map = map;
 				const vswap = this.files.get("vswap");
-				tedMap.setWallBitmaps(vswap ? extractWalls(vswap) : null);
-				tedMap.setPallet(
-					 isBlake
-						? blakePallet
-						: wolfPallet);
-				this.dom.preview.appendChild(tedMap);
+				tileMap.tiles = (vswap ? extractWalls(vswap) : null);
+				tileMap.pallet = isBlake ? blakePallet : wolfPallet;
+
+				const panBox = new WcPanBox();
+				panBox.append(tileMap);
+
+				this.dom.preview.appendChild(panBox);
 				break;
 			}
 		}

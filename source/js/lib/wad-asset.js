@@ -2,8 +2,7 @@ import { getString, trimString } from "./file-utils.js";
 import { loadWall as loadTedWall } from "../lib/ted-asset.js";
 import { IndexBitmap } from "../components/index-bitmap.js"
 import { 
-	loadSprite as loadRottSprite, 
-	loadTransparentSprite as loadRottTransparentSprite 
+	loadUnknownSprite
 } from "./rott-asset.js";
 import { loadImage as loadDoomImage } from "./doom-asset.js";
 import { multiTry } from "./exception-utils.js";
@@ -37,49 +36,7 @@ function getNullAsset(){
 }
 
 function getRottImageAsset(wad, dataView){
-	if(dataView.buffer.byteLength === 4096){
-		return multiTry(
-			() => getRottWall(wad, dataView),
-			() => getRottImage(wad, dataView),
-			() => getRottTransparentImage(wad, dataView)
-		);
-	} else {
-		return multiTry(
-			() => getRottImage(wad, dataView),
-			() => getRottTransparentImage(wad, dataView),
-			() => getRottWall(wad, dataView)
-		);
-	}
-}
-
-function getRottWall(wad, dataView){
-	const bitmap = loadTedWall(dataView);
-	const pallets = extractPallets(wad.getByName("PAL"));
-
-	const indexBitmap = new IndexBitmap();
-	indexBitmap.setBitmap(bitmap);
-	indexBitmap.setPallet(pallets[0]);
-	indexBitmap.height = 64;
-	indexBitmap.width = 64;
-
-	return indexBitmap;
-}
-
-function getRottImage(wad, dataView){
-	const bitmap = loadRottSprite(dataView);
-	const pallets = extractPallets(wad.getByName("PAL"));
-
-	const indexBitmap = new IndexBitmap();
-	indexBitmap.setBitmap(bitmap);
-	indexBitmap.setPallet(pallets[0]);
-	indexBitmap.height = bitmap.length;
-	indexBitmap.width = bitmap[0].length;
-
-	return indexBitmap;
-}
-
-function getRottTransparentImage(wad, dataView) {
-	const bitmap = loadRottTransparentSprite(dataView);
+	const bitmap = loadUnknownSprite(dataView);
 	const pallets = extractPallets(wad.getByName("PAL"));
 
 	const indexBitmap = new IndexBitmap();
@@ -148,6 +105,8 @@ function getPlayPal(dataView){
 				const blue = dataView.getUint8(offset + 2);
 
 				tableCell.style.backgroundColor = `rgb(${red},${green},${blue})`;
+				tableCell.style.width = `16px`;
+				tableCell.style.height = `16px`;
 				tableRow.appendChild(tableCell);
 			}
 			table.appendChild(tableRow);
