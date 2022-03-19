@@ -3,9 +3,7 @@ Masked Walls
 
 First I cleaned up the UI a little bit.  One of the nagging problems was that the list of assets was the same size as the preview window, which didn't make sense.  I updated it with the `split-panel` control.  This is also built from scratch though I've pulled the details out into it's own [blog post](https://dev.to/ndesmic/how-to-make-a-resizable-panel-control-with-web-components-2cpa).  Now the spacing makes more sense and you can resize the panels, much better!
 
-# Masked Walls
-
-These are defined on `RT_TED.c` line 2637, function `SetupMaskedWalls`.
+Masked Walls are defined on `RT_TED.c` line 2637, function `SetupMaskedWalls`.
 
 What happens when we find a masked wall is found in `RT_DOOR.c` line 2090 `SpawnMaskedWall`.  There are a number of different types and these are defined as sections in the WAD.  Note not all of them have section ending markers.
 
