@@ -28,10 +28,10 @@ export function loadSprite(asset) {
 
 			//draw post spans
 			for (let row = rowStart; row < rowStart + pixelCount; row++) {
-				const palletIndex = dataView.getUint8(index);
+				const paletteIndex = dataView.getUint8(index);
 				index += 1;
 
-				bitmap[row][col] = palletIndex;
+				bitmap[row][col] = paletteIndex;
 			}
 		}
 	}

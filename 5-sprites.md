@@ -5,7 +5,7 @@ Fixing up the code for sprite display wasn't too hard.  Basically each post has 
 
 ```js
 renderImage(){
-	const pallet = this.wad.get("PLAYPAL") ?? this.wad.get("PAL");
+	const palette = this.wad.get("PLAYPAL") ?? this.wad.get("PAL");
 	this.width = this.lump.getUint16(0, true);
 	this.height = this.lump.getUint16(2, true);
 	const left = this.lump.getUint16(4, true);
@@ -39,13 +39,13 @@ renderImage(){
 			//draw post spans
 			for (let row = rowStart; row < rowStart + pixelCount; row++) {
 				const pixelOffset = (row * this.width * 4) + (col * 4);
-				const palletIndex = this.lump.getUint8(index);
+				const paletteIndex = this.lump.getUint8(index);
 				index += 1;
-				const palletOffset = palletIndex * 3;
+				const paletteOffset = paletteIndex * 3;
 
-				imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-				imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-				imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+				imageData.data[pixelOffset] = palette.getUint8(paletteOffset); //red
+				imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+				imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 				imageData.data[pixelOffset + 3] = 255;
 			}
 
@@ -65,7 +65,7 @@ The imp is a bit short and fat, this is because in Doom pixels aren't squares.  
 
 ![A doom imp that looks proportionally correct](images/chapter5/imp-aspect.png)
 
-The element that paints Doom images was moved into the ominous sounding component `doom-image.js`.  This makes it easier to add new things, in this case an aspect ratio toggle but I'm thinking in the future it might be useful to render the sprite with different colormaps or pallets and we can do some of that there.  It's a tad messy but not too bad.
+The element that paints Doom images was moved into the ominous sounding component `doom-image.js`.  This makes it easier to add new things, in this case an aspect ratio toggle but I'm thinking in the future it might be useful to render the sprite with different colormaps or palettes and we can do some of that there.  It's a tad messy but not too bad.
 
 If you are doing you own implementations and need a guide, I've created one for the [TROOA1 sprite](https://ndesmic.github.io/webrott/visual-aids/trooa1.html).
 
@@ -73,7 +73,7 @@ Rise of the Triad images are very similar (but not quite the same) so we can mor
 
 ```js
 renderImage() {
-	const pallet = this.wad.get("PAL");
+	const palette = this.wad.get("PAL");
 	this.origSize = this.lump.getUint16(0, true);
 	this.width = this.lump.getUint16(2, true);
 	this.height = this.lump.getUint16(4, true);
@@ -104,12 +104,12 @@ renderImage() {
 			//draw post spans
 			for (let row = rowStart; row < rowStart + pixelCount; row++) {
 				const pixelOffset = (row * this.width * 4) + (col * 4);
-				const palletIndex = this.lump.getUint8(index);
-				const palletOffset = palletIndex * 3;
+				const paletteIndex = this.lump.getUint8(index);
+				const paletteOffset = paletteIndex * 3;
 
-				imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-				imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-				imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+				imageData.data[pixelOffset] = palette.getUint8(paletteOffset); //red
+				imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+				imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 				imageData.data[pixelOffset + 3] = 255;
 
 				index++;
@@ -149,7 +149,7 @@ Notes
 - Lots of duplicated assets were moved into the `shared` top level project and cleaned up.
 - Folder names shortened because it's just annoying typing those into the terminal all the time.
 - The project should be run `npm start` from root rather than indiviudal projects now (to account for asset relocation).
-- Add a method to check the was for which type it is `rott` or `doom`, it's pretty simplistic, it checks the name of the pallet lump to determine which one.
+- Add a method to check the was for which type it is `rott` or `doom`, it's pretty simplistic, it checks the name of the palette lump to determine which one.
 - Fixed some display annoyances like making the two columns seperately scrollable so it's easy to see assets further down the list.
 
 Sources

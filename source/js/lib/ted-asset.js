@@ -1,7 +1,7 @@
 import { allocBlockArray } from "./array-utils.js";
 import { IndexBitmap } from "../components/index-bitmap.js";
-import { wolfPallet, loadSprite, wolfExtensions } from "../lib/wolf-asset.js";
-import { blakePallet, blakeExtensions } from "../lib/blake-asset.js"; 
+import { wolfpalette, loadSprite, wolfExtensions } from "../lib/wolf-asset.js";
+import { blakepalette, blakeExtensions } from "../lib/blake-asset.js"; 
 
 export function loadAsset(file, name, type){
 	const asset = file.getAsset(name);
@@ -12,9 +12,9 @@ export function loadAsset(file, name, type){
 			element.width = 64;
 			element.setBitmap(loadWall(asset));
 			if(wolfExtensions.includes(file.extension)){
-				element.setPallet(wolfPallet);
+				element.setpalette(wolfpalette);
 			} else if(blakeExtensions.includes(file.extension)){
-				element.setPallet(blakePallet);
+				element.setpalette(blakepalette);
 			}
 			return element;
 		}
@@ -24,9 +24,9 @@ export function loadAsset(file, name, type){
 			element.width = 64;
 			element.setBitmap(loadSprite(asset, file.arrayBuffer));
 			if (wolfExtensions.includes(file.extension)) {
-				element.setPallet(wolfPallet);
+				element.setpalette(wolfpalette);
 			} else if (blakeExtensions.includes(file.extension)) {
-				element.setPallet(blakePallet);
+				element.setpalette(blakepalette);
 			}
 			return element;
 		}

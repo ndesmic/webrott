@@ -26,11 +26,11 @@ customElements.define("lzexe-extractor",
 			this.shadowRoot.innerHTML = `
 				<link rel="stylesheet" href="../shared/css/system.css">
 				<style>
-					#pallet table td { width: 16px; height: 16px; }
+					#palette table td { width: 16px; height: 16px; }
 				</style>
 				<label for="file">Select a EXE:</label>
 				<input id="file" type="file" accepts=".exe" />
-				<div id="pallet"></div>
+				<div id="palette"></div>
 				<div id="output"></div>
 			`;
 		}
@@ -38,7 +38,7 @@ customElements.define("lzexe-extractor",
 			this.dom = {
 				file: this.shadowRoot.querySelector("#file"),
 				output: this.shadowRoot.querySelector("#output"),
-				pallet: this.shadowRoot.querySelector("#pallet")
+				palette: this.shadowRoot.querySelector("#palette")
 			};
 		}
 		attachEvents() {

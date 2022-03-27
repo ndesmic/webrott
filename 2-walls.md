@@ -7,7 +7,7 @@ I'm going to modify our `wad-reader` component to show a preview of the wall whe
 
 For this we'll create a `wad-asset.js` file that will give us some sort of visual representation of the asset.  For a wall we need to get the chunk of data describing a wall and turn it into and image.  We do this by creating a canvas, pulling out the pixel image data, and then passing it back to append to the preview window.
 
-Walls in ROTT are 64x64 bitmaps.  What we don't know yet is where the pallet comes from.  So for this exercise let's just assign the 256 values to the red color and see what happens.  Also note that everything is defined in columns, not rows as you may expect so you need to flip the coordinates to get it at the right orientation.
+Walls in ROTT are 64x64 bitmaps.  What we don't know yet is where the palette comes from.  So for this exercise let's just assign the 256 values to the red color and see what happens.  Also note that everything is defined in columns, not rows as you may expect so you need to flip the coordinates to get it at the right orientation.
 
 ```js
 function getWall(dataView){
@@ -37,11 +37,11 @@ This seems to get results that look reasonable.
 
 ![A red tinted and rotated image that looks vaguely like a triad](images/chapter2/reading-walls-1.png)
 
-For the pallet, we need to dig around the source code but it should be roughly similar to a Doom pallet (https://doomwiki.org/wiki/PLAYPAL).  This is specified in the WAD itself as the `PLAYPAL` lump. Doom also used 34 colormaps defined in the `COLORMAP` lump for lighting effects, but we can see the size of this lump is only 8192 bytes for ROTT.  Divide this by 256 (the size of each color map) and we get an even 32.  So there are 32 color maps.
+For the palette, we need to dig around the source code but it should be roughly similar to a Doom palette (https://doomwiki.org/wiki/PLAYPAL).  This is specified in the WAD itself as the `PLAYPAL` lump. Doom also used 34 colormaps defined in the `COLORMAP` lump for lighting effects, but we can see the size of this lump is only 8192 bytes for ROTT.  Divide this by 256 (the size of each color map) and we get an even 32.  So there are 32 color maps.
 
 Sources
 -------
 
 - Doom Picture Format: https://doomwiki.org/wiki/Picture_format
-- Doom Pallet: https://doomwiki.org/wiki/PLAYPAL
+- Doom palette: https://doomwiki.org/wiki/PLAYPAL
 - Doom Colormap: https://doomwiki.org/wiki/COLORMAP

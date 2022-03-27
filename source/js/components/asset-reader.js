@@ -24,6 +24,13 @@ function renderEntry(file, fileType, entry, index, loader){
 			tr.addEventListener("click", () => loader(file, "wad", entry.name));
 			break;
 		}
+		case "grp": {
+			tr.appendChild(renderCell(entry.name));
+			tr.appendChild(renderCell(entry.offset));
+			tr.appendChild(renderCell(entry.size));
+			tr.addEventListener("click", () => loader(file, "grp", entry.name));
+			break;
+		}
 		case "vswap": {
 			tr.appendChild(renderCell(entry.type));
 			tr.appendChild(renderCell(entry.offset));
@@ -75,8 +82,7 @@ export class AssetReader extends HTMLElement {
 					#entries-container { grid-area: list; overflow: auto; block-size: 100%; }
 					#preview canvas { image-rendering: pixelated;  }
 					#input { padding: 0.5rem; grid-row: 1; }
-					#entries tr, #maps tr { cursor: pointer; }s
-					#preview .pallet td { inline-size: 32px; block-size: 32px; }
+					#entries tr, #maps tr { cursor: pointer; }
 					wc-split-panel { inline-size: 100%; grid-row: 2 / 3; --first-size: 325px; overflow: hidden; }
 					wc-split-panel::part(median) { inline-size: 0.25rem; }
 					#panel-left { block-size: 100%; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
@@ -94,7 +100,15 @@ export class AssetReader extends HTMLElement {
 						<tab-set id="tabs">
 							<div slot="tabs">Content</div>
 							<div id="entries-container" slot="panels">
-								<table id="entries"></table>
+								<table>
+									<thead>
+										<th>Index</th>
+										<th>Name</th>
+										<th>Offset</th>
+										<th>Size</th>
+									<thead>
+									<tbody id="entries"></tbody>
+								</table>
 							</div>
 							<div slot="tabs">Maps</div>
 							<div id="maps-container" slot="panels">
@@ -136,6 +150,13 @@ export class AssetReader extends HTMLElement {
 				this.files.set("wad", wadFile);
 				wadFile.entries
 					.map((entry, index) => renderEntry(wadFile, "wad", entry, index, this.loadAsset))
+					.forEach(tr => frag.appendChild(tr));
+				this.dom.entries.appendChild(frag);
+			} else if (extension === "grp") {
+				const { GrpFile } = await import("../lib/grp-file.js");
+				const grpFile = new GrpFile(arrayBuffer);
+				grpFile.entries
+					.map((entry, index) => renderEntry(grpFile, "grp", entry, index, this.loadAsset))
 					.forEach(tr => frag.appendChild(tr));
 				this.dom.entries.appendChild(frag);
 			} else if (name === "vswap") {
@@ -183,6 +204,12 @@ export class AssetReader extends HTMLElement {
 				this.dom.preview.appendChild(loadAsset(file, assetId));
 				break;
 			}
+			case "grp": {
+				const { loadAsset } = await import("../lib/build-asset.js");
+
+				this.dom.preview.appendChild(loadAsset(file, assetId));
+				break;
+			}
 			case "vswap": {
 				const { loadAsset } = await import("../lib/ted-asset.js");
 
@@ -198,7 +225,7 @@ export class AssetReader extends HTMLElement {
 					extractMaskedWallEntries,
 					extractHimaskEntries, 
 					extractExitEntries, 
-					getPallets, 
+					getpalettes, 
 					loadMap 
 				} = await import("../lib/rott-asset.js");
 				const wad = this.files.get("wad");
@@ -224,7 +251,7 @@ export class AssetReader extends HTMLElement {
 					const maskedWallTextures = maskedWalls.map(([key, value]) => value);
 					const exitTextures = exits.map(([key, value]) => value);
 					tileMap.tiles = [...walls, ...doorTextures, ...hiMaskedWallTextures, ...maskedWallTextures, ...exitTextures];
-					tileMap.pallet = getPallets(wad)[0];
+					tileMap.palette = getpalettes(wad)[0];
 				} else {
 					const [map, _] = loadMap(file.getMap(assetId));
 					tileMap.map = map;
@@ -239,8 +266,8 @@ export class AssetReader extends HTMLElement {
 			case "ted-map": {
 				const { WcTileMap } = await import("./wc-tile-map.js");
 				const { WcPanBox } = await import("./wc-pan-box.js");
-				const { wolfPallet, loadMap } = await import("../lib/wolf-asset.js");
-				const { blakePallet, blakeExtensions } = await import("../lib/blake-asset.js");
+				const { wolfpalette, loadMap } = await import("../lib/wolf-asset.js");
+				const { blakepalette, blakeExtensions } = await import("../lib/blake-asset.js");
 				const { extractWalls } = await import("../lib/ted-asset.js");
 
 				const isBlake = blakeExtensions.includes(file.extension);
@@ -252,7 +279,7 @@ export class AssetReader extends HTMLElement {
 				tileMap.map = map;
 				const vswap = this.files.get("vswap");
 				tileMap.tiles = (vswap ? extractWalls(vswap) : null);
-				tileMap.pallet = isBlake ? blakePallet : wolfPallet;
+				tileMap.palette = isBlake ? blakepalette : wolfpalette;
 
 				const panBox = new WcPanBox();
 				panBox.append(tileMap);

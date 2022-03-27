@@ -1,7 +1,7 @@
 Walls Part 2: We Have Color
 ===========================
 
-After much digging in the ROTT source code I found by checking references for `colormap` that is is assigned to by an object called `origpal` (which sounds like what we want). That the pallet is loaded in `RT_MAIN.C`.
+After much digging in the ROTT source code I found by checking references for `colormap` that is is assigned to by an object called `origpal` (which sounds like what we want). That the palette is loaded in `RT_MAIN.C`.
 
 ```C
 void Init_Tables (void){
@@ -13,16 +13,16 @@ void Init_Tables (void){
    //...stuff
 ```
 
-This means pallets are probably in lump `pal` and it matches the Doom `PLAYPAL` size, 768 bytes.  This now seems obvious in retrospect but when you're digging through 1000 lumps you don't see it.  Anyway, we can wire this up using the same function as `PLAYPAL` and we get a preview.  
+This means palettes are probably in lump `pal` and it matches the Doom `PLAYPAL` size, 768 bytes.  This now seems obvious in retrospect but when you're digging through 1000 lumps you don't see it.  Anyway, we can wire this up using the same function as `PLAYPAL` and we get a preview.  
 
-![256 boxes representing the Rise of the Triad color pallet](images/chapter4/rott-pallet.png)
+![256 boxes representing the Rise of the Triad color palette](images/chapter4/rott-palette.png)
 
 
-Then we can change the wall texture rendering code to index into the pallet.
+Then we can change the wall texture rendering code to index into the palette.
 
 ```js
 //getWall()
-const pallet = wad.get("PLAYPAL") ?? wad.get("PAL");
+const palette = wad.get("PLAYPAL") ?? wad.get("PAL");
 
 // ...
 
@@ -30,11 +30,11 @@ const pallet = wad.get("PLAYPAL") ?? wad.get("PAL");
 for(let col = 0; col < 64; col++){
 	for(let row = 0; row < 64; row++){
 		const pixelOffset = (col * 64 * 4) + (row * 4);
-		const palletIndex = dataView.getUint8((row * 64) + col);
-		const palletOffset = palletIndex * 3;
-		imageData.data[pixelOffset] =  pallet.getUint8(palletOffset); //red
-		imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-		imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+		const paletteIndex = dataView.getUint8((row * 64) + col);
+		const paletteOffset = paletteIndex * 3;
+		imageData.data[pixelOffset] =  palette.getUint8(paletteOffset); //red
+		imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+		imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 		imageData.data[pixelOffset + 3] = 255 //alpha
 	}
 }
@@ -48,7 +48,7 @@ Basically there's more metadata as Doom defines "posts" or vertical columns of p
 
 ```js
 function getDoomImage(wad, dataView){
-	const pallet = wad.get("PLAYPAL") ?? wad.get("PAL");
+	const palette = wad.get("PLAYPAL") ?? wad.get("PAL");
 	const width = dataView.getUint16(0, true);
 	const height = dataView.getUint16(2, true);
 	const left = dataView.getUint16(4, true);
@@ -75,12 +75,12 @@ function getDoomImage(wad, dataView){
 		index += 3; //advance one more byte because of unused padding
 		for(let row = rowStart; row < rowStart + pixelCount; row++){
 			const pixelOffset = (row * width * 4) + (col * 4);
-			const palletIndex = dataView.getUint8(index);
-			const palletOffset = palletIndex * 3;
+			const paletteIndex = dataView.getUint8(index);
+			const paletteOffset = paletteIndex * 3;
 
-			imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-			imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-			imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+			imageData.data[pixelOffset] = palette.getUint8(paletteOffset); //red
+			imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+			imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 			imageData.data[pixelOffset + 3] = 255
 
 			index++;

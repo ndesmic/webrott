@@ -4,14 +4,14 @@ Performance 1: Map Views
 There are several aspects we can look at to cause the rendering not to chug:
 
 1) Render fewer canvases
-2) Cache the intermediate results of rendering bitmaps with pallets
+2) Cache the intermediate results of rendering bitmaps with palettes
 3) Do less work on the main thread
 
 I want to start addressing 3 because I think any strategy here will benefit us later in other areas, but I doubt it'll make the biggest impact.  First, we start by getting a baseline.
 
 ```js
 	const start = performance.now();
-	const table = renderTableMap(this.map, this.walls, this.pallet);
+	const table = renderTableMap(this.map, this.walls, this.palette);
 	this.dom.tableContainer.appendChild(table);
 	const end = performance.now();
 	console.log(`Rendered map in: ${end - start}ms`);
@@ -85,7 +85,7 @@ Much better all around.  We not only saved a lot of time by prerendering the wal
 Round 2
 -------
 
-To do this, I'm introducing another intermediate format, the tile map.  I'm not going to go into the code because it's nearly identical to the indexed bitmap, except instead of each value representing a color in a pallet, it represents a tile in a tilemap.  This abstracts the map format so it's easier to render.  So now we send the tile map, list of wall bitmap and the pallet into the `render-worker` and it'll generate the full map image.  Then we just need to absolutely position the grid over the image (the grid doesn't do much yet but I still think it'll come in handy).  With this change the render is now down to ~200ms.  This is pretty acceptable.
+To do this, I'm introducing another intermediate format, the tile map.  I'm not going to go into the code because it's nearly identical to the indexed bitmap, except instead of each value representing a color in a palette, it represents a tile in a tilemap.  This abstracts the map format so it's easier to render.  So now we send the tile map, list of wall bitmap and the palette into the `render-worker` and it'll generate the full map image.  Then we just need to absolutely position the grid over the image (the grid doesn't do much yet but I still think it'll come in handy).  With this change the render is now down to ~200ms.  This is pretty acceptable.
 
 I also hooked up the `render-worker` to `index-bitmap` so we can get the benefits of threading there too.
 

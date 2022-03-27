@@ -15,7 +15,7 @@ export class IndexBitmap extends HTMLElement {
 		element.cacheDom = element.cacheDom.bind(element);
 		element.render = element.render.bind(element);
 		element.setBitmap = element.setBitmap.bind(element);
-		element.setPallet = element.setPallet.bind(element);
+		element.setPalette = element.setPalette.bind(element);
 		element.updateHeight = element.updateHeight.bind(element);
 		element.attachEvents = element.attachEvents.bind(element);
 	}
@@ -69,11 +69,11 @@ export class IndexBitmap extends HTMLElement {
 	setBitmap(bitmap) { //2d height x width array of int
 		this.bitmap = bitmap;
 	}
-	setPallet(pallet) { //1d array of [red,green,blue]
-		this.pallet = pallet;
+	setPalette(palette) { //1d array of [red,green,blue]
+		this.palette = palette;
 	}
 	async renderImage() {
-		const bitmap = await renderDispatcher.dispatch("renderIndexedBitmap", [this.bitmap, this.pallet]);
+		const bitmap = await renderDispatcher.dispatch("renderIndexedBitmap", [this.bitmap, this.palette]);
 		if (this.dom.canvasContainer.childNodes.length > 0){
 			this.dom.canvasContainer.removeChild(this.dom.canvas.firstChild);
 		}

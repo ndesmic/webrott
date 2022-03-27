@@ -3,19 +3,19 @@ EXE Compression
 
 Note: Thgis time we'll be looking at code in [../tools/unlzwexe.html](unlzw.html) instead of the source folder.
 
-I did a little exploration to see what happens when I try to add Blake Stone: Aliens of Gold assets to the asset reader and it turned out to be a rather large rabbit hole.  When you try to add them they do work, well, mostly.  Blake Stone does not use the same pallet as Wolfenstien so everything looks messed up:
+I did a little exploration to see what happens when I try to add Blake Stone: Aliens of Gold assets to the asset reader and it turned out to be a rather large rabbit hole.  When you try to add them they do work, well, mostly.  Blake Stone does not use the same palette as Wolfenstien so everything looks messed up:
 
-![Blake Stone sector patrol guard with wrong colors](images/chapter13/blake-wrong-pallet.png)
+![Blake Stone sector patrol guard with wrong colors](images/chapter13/blake-wrong-palette.png)
 
-Ok, so this is easy enough to fix right?  Well no.  Before when we extracted the Wolfenstien pallet (or at least one of them, still not sure about the rest) we had access to `GAMEPAL.obj` in the source code and some handy documentation on where the pallet data started.  Sadly, we don't have this for Blake Stone.  So what do we do?
+Ok, so this is easy enough to fix right?  Well no.  Before when we extracted the Wolfenstien palette (or at least one of them, still not sure about the rest) we had access to `GAMEPAL.obj` in the source code and some handy documentation on where the palette data started.  Sadly, we don't have this for Blake Stone.  So what do we do?
 
-- We could totally cheat and just steal the extracted pallet from someone else's source port.
+- We could totally cheat and just steal the extracted palette from someone else's source port.
 - We could painfully reconstruct it using screenshots taken from DOSBOX etc.
-- We can try to extract the pallet from compiled source.
+- We can try to extract the palette from compiled source.
 
 The first is always an option but not really in the spirit of the project.  However, we can use some pre-knowledge of what the data looks like to make our job easier.  Two is more of a last resort.
 
-The first stab at the problem was seeing if we can find some patterns in the data of the `BLAKE_AOG.exe`.  We know that black and grays are part of the pallet and we know it should be in the same format as in Wolfenstien (64 value scaled RGB).  Using a hex editor I scanned the exe for patterns like 0,0,0 (black) or other sets of 3 repeating bytes (gray).  This turned out to be fruitless as no relevant matches were coming up.  As it turns out the exe is compressed.  Fortunately, some research revealed how it was compressed.  It was common for early Id and Apogee games to use a utility called LZEXE.  This compresses the exe and lets it decompress itself when run.  There's a separate tool called UNLZEXE (not by the same author) that can be used to decompress it.  Even better it was maintained enough that it's still usable today and there's some source code for it (the bad part is it's early 90s C, lots of globals, lots of hyper abbreviated variables, and variable reuse).
+The first stab at the problem was seeing if we can find some patterns in the data of the `BLAKE_AOG.exe`.  We know that black and grays are part of the palette and we know it should be in the same format as in Wolfenstien (64 value scaled RGB).  Using a hex editor I scanned the exe for patterns like 0,0,0 (black) or other sets of 3 repeating bytes (gray).  This turned out to be fruitless as no relevant matches were coming up.  As it turns out the exe is compressed.  Fortunately, some research revealed how it was compressed.  It was common for early Id and Apogee games to use a utility called LZEXE.  This compresses the exe and lets it decompress itself when run.  There's a separate tool called UNLZEXE (not by the same author) that can be used to decompress it.  Even better it was maintained enough that it's still usable today and there's some source code for it (the bad part is it's early 90s C, lots of globals, lots of hyper abbreviated variables, and variable reuse).
 
 The first step was to see if indeed the EXE was compressed with this tool and if UNLZEXE worked.  It's easy enough to run `BLAKE_AOG.exe` through UNLZEXE and it didn't complain.  Next, we load it up in DOSBOX to see if it actually boots.  It does!  This is good because it confirms what we read but more importantly we have a decompressed exe.
 

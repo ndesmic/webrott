@@ -1,4 +1,4 @@
-Reading Pallets 2: EXE Compression, Binary Diffing, and Pallet Sniffing
+Reading palettes 2: EXE Compression, Binary Diffing, and palette Sniffing
 =======================================================================
 
 The last part was getting rather long so I decided to end without having a 100% working UNLZEXE utility.  While most of the code was working and it could generate output, the output file was about 2x the expected size.  After mindlessly watching the debugger through about 400 cycles of LZ decompression and getting good results, I felt it was time to find another way to go about this.
@@ -44,18 +44,18 @@ UNLZW.exe is successfully ported to the web, no more native binaries! (Well almo
 
 [You can find the UNLZEXE utility here](./tools/unlzexe.html)
 
-Finding the Pallet
+Finding the palette
 ------------------
 
-Finding the pallet is a hard task.  At first I started with my naïve idea to search for 0,0,0 to find the color black.  There are now way too many entries to look for, especially with empty padding bytes so we need to try something different.
+Finding the palette is a hard task.  At first I started with my naïve idea to search for 0,0,0 to find the color black.  There are now way too many entries to look for, especially with empty padding bytes so we need to try something different.
 
 Attempt 2 was finding 3 length sequences of repeating bytes (e.g. gray colors).  This was done by creating a sliding window of length 9 and asserting that we had 3 triplets of different values.  Each step one byte is shifted from the start, and push onto the end.   This got me closer and I found a couple pieces of data that looked reasonable but if I find one where does it start? Where does it end?  I can't be sure I even found the right thing.  
 
-Attempt 3 was to find an entire pallet.  We know a pallet is 768 bytes long, all of them less than 64, and no triplets should repeat.  This is a much slower algorithm.  It also doesn't work.  What I found is that colors *can* repeat (you'd think with only 256 colors they wouldn't...).  This is the case for some of the gray colors (color 16 is the same as 160).  In the end, what I found is that Blake Stone shares the very same transparency color with Wolfenstien.  After some manual searching for this color `38,0,34` (luckily there's only a couple of matching sequences) I found buried in the end section of the EXE with the static strings. That should be the end of the pallet so we look back 768 bytes and the first color, as expected is `0,0,0`.  And that's how the pallet extractor now works.  It finds a 768 byte window where values all less than 64, with beginning `0,0,0` and end `38,0,34`.  It now works on unpacked Wolfenstien 3D EXEs (The UNLZEXE utility worked for that too!), `gamepal.obj` and `BS_AOG.exe` so it's good enough.
+Attempt 3 was to find an entire palette.  We know a palette is 768 bytes long, all of them less than 64, and no triplets should repeat.  This is a much slower algorithm.  It also doesn't work.  What I found is that colors *can* repeat (you'd think with only 256 colors they wouldn't...).  This is the case for some of the gray colors (color 16 is the same as 160).  In the end, what I found is that Blake Stone shares the very same transparency color with Wolfenstien.  After some manual searching for this color `38,0,34` (luckily there's only a couple of matching sequences) I found buried in the end section of the EXE with the static strings. That should be the end of the palette so we look back 768 bytes and the first color, as expected is `0,0,0`.  And that's how the palette extractor now works.  It finds a 768 byte window where values all less than 64, with beginning `0,0,0` and end `38,0,34`.  It now works on unpacked Wolfenstien 3D EXEs (The UNLZEXE utility worked for that too!), `gamepal.obj` and `BS_AOG.exe` so it's good enough.
 
-What does the pallet look like?
+What does the palette look like?
 
-![256 squares representing the Blake Stone pallet](images/chapter14/blake-pallet.png)
+![256 squares representing the Blake Stone palette](images/chapter14/blake-palette.png)
 
 Let's add it to the asset loader (this will be pushed to part 15) and see our new sector patrol guard sprite:
 
@@ -63,7 +63,7 @@ Let's add it to the asset loader (this will be pushed to part 15) and see our ne
 
 That was a lot of work to get such a tiny piece of data, but it sure feels good.  We also are armed with some new knowledge and couple new tools that might come in handy later.
 
-[You can find the pallet extractor here](./tools/pallet-extractor.html)
+[You can find the palette extractor here](./tools/palette-extractor.html)
 
 If you want a guide for Blake Stone chunk 287 look here: [chunk 287](./visual-aids/blake-chunk-287.html)
 

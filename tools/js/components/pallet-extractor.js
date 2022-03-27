@@ -1,7 +1,7 @@
 import { readFile, download } from "../libs/file-utils.js";
-import { getTablePallet } from "../libs/image-utils.js";
+import { getTablepalette } from "../libs/image-utils.js";
 
-customElements.define("pallet-extractor",
+customElements.define("palette-extractor",
 	class extends HTMLElement {
 		static get observedAttributes() {
 			return [];
@@ -25,15 +25,15 @@ customElements.define("pallet-extractor",
 			this.shadowRoot.innerHTML = `
 				<link rel="stylesheet" href="./css/system.css">
 				<style>
-					.pallet-container { display: grid; grid-template-columns: max-content; }
-					.pallet-container table { grid-column: 1 / 1; grid-row: 1 / 1; }
-					.pallet-container textarea { grid-column: 2 / 3; grid-row: 1 / 1; }
-					.pallet-container table td { width: 16px; height: 16px; }
+					.palette-container { display: grid; grid-template-columns: max-content; }
+					.palette-container table { grid-column: 1 / 1; grid-row: 1 / 1; }
+					.palette-container textarea { grid-column: 2 / 3; grid-row: 1 / 1; }
+					.palette-container table td { width: 16px; height: 16px; }
 					
 				</style>
 				<label for="file">Select GAMEPAL.obj or decompressed EXE:</label>
 				<input id="file" type="file" />
-				<div id="pallet"></div>
+				<div id="palette"></div>
 				<div id="output"></div>
 			`;
 		}//251471
@@ -41,7 +41,7 @@ customElements.define("pallet-extractor",
 			this.dom = {
 				file: this.shadowRoot.querySelector("#file"),
 				output: this.shadowRoot.querySelector("#output"),
-				pallet: this.shadowRoot.querySelector("#pallet")
+				palette: this.shadowRoot.querySelector("#palette")
 			};
 		}
 		attachEvents(){
@@ -50,7 +50,7 @@ customElements.define("pallet-extractor",
 				const arrayBuffer = await readFile(file);
 				const start = performance.now();
 
-				console.log("Testing: seeing if we can snoop this file for a pallet");
+				console.log("Testing: seeing if we can snoop this file for a palette");
 				const dataView = new DataView(arrayBuffer, 0);
 				const sequence = [];
 				const completedSequences = [];
@@ -63,7 +63,7 @@ customElements.define("pallet-extractor",
 						sequence.shift();
 						sequence.push(value);
 					}
-					if (validatePallet(sequence)) {
+					if (validatepalette(sequence)) {
 						completedSequences.push({
 							index: i - 767,
 							data: [...sequence]
@@ -75,21 +75,21 @@ customElements.define("pallet-extractor",
 				for(let { index, data } of completedSequences){
 					const li = document.createElement("li");
 					const match = document.createElement("div");
-					const palletContainer = document.createElement("div");
-					palletContainer.classList.add("pallet-container");
+					const paletteContainer = document.createElement("div");
+					paletteContainer.classList.add("palette-container");
 
 					match.textContent = `Found match at ${index}`;
 					li.appendChild(match);
 
-					const unpackedData = unpackPallet(data);
-					palletContainer.appendChild(getTablePallet(unpackedData))
+					const unpackedData = unpackpalette(data);
+					paletteContainer.appendChild(getTablepalette(unpackedData))
 					const textData = document.createElement("textarea");
 					textData.innerHTML = JSON.stringify(unpackedData);
-					palletContainer.appendChild(textData);
-					li.appendChild(palletContainer);
+					paletteContainer.appendChild(textData);
+					li.appendChild(paletteContainer);
 					const downloadButton = document.createElement("button");
-					downloadButton.addEventListener("click", () => download(new Blob([new Uint8Array(data)], { type: "application/octet-stream" }), "pallet.bin"));
-					downloadButton.textContent = "Download Pallet";
+					downloadButton.addEventListener("click", () => download(new Blob([new Uint8Array(data)], { type: "application/octet-stream" }), "palette.bin"));
+					downloadButton.textContent = "Download palette";
 					li.appendChild(downloadButton);
 					ul.appendChild(li);
 				}
@@ -105,7 +105,7 @@ customElements.define("pallet-extractor",
 	}
 );
 
-function validatePallet(sequence){
+function validatepalette(sequence){
 	if(sequence.length !== 768) return false;
 
 	const set = new Set();
@@ -120,14 +120,14 @@ function validatePallet(sequence){
 		&& sequence[767] === 0x22;
 }
 
-function unpackPallet(bytes){
-	const pallet = [];
+function unpackpalette(bytes){
+	const palette = [];
 	for (let i = 0; i < bytes.length; i += 3) {
-		pallet.push([
+		palette.push([
 			bytes[i] << 2,
 			bytes[i+1] << 2,
 			bytes[i+2] << 2
 		]);
 	}
-	return pallet;
+	return palette;
 }

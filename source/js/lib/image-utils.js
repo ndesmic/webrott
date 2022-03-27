@@ -1,4 +1,4 @@
-export function renderIndexedBitmap(bitmap, pallet, offScreen = false){
+export function renderIndexedBitmap(bitmap, palette, offScreen = false){
 	if(bitmap == null) return null;
 	const height = bitmap.length;
 	const width = bitmap[0].length;
@@ -18,7 +18,7 @@ export function renderIndexedBitmap(bitmap, pallet, offScreen = false){
 	for (let col = 0; col < width; col++) {
 		for (let row = 0; row < height; row++) {
 			const pixelOffset = (row * width * 4) + (col * 4);
-			const color = pallet[bitmap[row][col]];
+			const color = palette[bitmap[row][col]];
 
 			if(!color){
 				imageData.data[pixelOffset] = 0;

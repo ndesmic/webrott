@@ -15,7 +15,7 @@ All sprites in Wolf3D are 64x64 pixels.  This is unlike Doom and ROTT which are 
 
 With this we can start the rendering.  We start at start column and loop to end column.  For each column, we take the offset from the start of the sprite and we will be pointed at a list of 6-byte drawing instructions.  The first 2 bytes is a 16-bit value representing the ending row index, we skip the middle 2, and the final 2 bytes is a 16-bit value representing the starting row.  Note that like with Doom image posts we can have multiple gaps, we continue to increment 6-bytes and read the next instruction, if the end row index is `0` then the column is complete and we move to the next one.
 
-So then where is the pixel data?  Well, right below column offsets is an array of all the color indicies used in the sprite and there is 1 per colored pixel.  So as we draw the columns we take the next byte in the from this pixel pool and that is the pallet index for that pixel.
+So then where is the pixel data?  Well, right below column offsets is an array of all the color indicies used in the sprite and there is 1 per colored pixel.  So as we draw the columns we take the next byte in the from this pixel pool and that is the palette index for that pixel.
 
 The code: 
 
@@ -61,7 +61,7 @@ export function loadSprite(asset){
 }
 ```
 
-Note that I added a little error condition at the end.  When testing it's really easy to get an infinite loop and this will cause the tab to hang and UI to freeze.  After needing to close and reopen tab a few times, I added a sanity check so if we've read more than 64 instructions (which is impossible) we error out.  This is not technically needed in working code with correct assets.  The bitmap is rendered with the Wolfenstien pallet as explained in the last part.
+Note that I added a little error condition at the end.  When testing it's really easy to get an infinite loop and this will cause the tab to hang and UI to freeze.  After needing to close and reopen tab a few times, I added a sanity check so if we've read more than 64 instructions (which is impossible) we error out.  This is not technically needed in working code with correct assets.  The bitmap is rendered with the Wolfenstien palette as explained in the last part.
 
 ![Hans Grosse sprite but it looks a bit off](images/chapter10/grosse.png)
 

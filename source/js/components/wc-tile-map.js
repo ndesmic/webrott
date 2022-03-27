@@ -11,7 +11,7 @@ export class WcTileMap extends HTMLElement {
 	#map;
 	#tiles;
 	#transforms;
-	#pallet;
+	#palette;
 	#tileSize;
 
 	#rendered = false;
@@ -20,7 +20,7 @@ export class WcTileMap extends HTMLElement {
 		"map",
 		"tiles",
 		"transforms",
-		"pallet",
+		"palette",
 		"tile-size"
 	];
 	constructor() {
@@ -79,8 +79,8 @@ export class WcTileMap extends HTMLElement {
 		this.#transforms = transforms;
 		this.renderMap();
 	}
-	set pallet(pallet){
-		this.#pallet = pallet;
+	set palette(palette){
+		this.#palette = palette;
 		this.renderMap();
 	}
 	set ["tile-size"](tileSize){
@@ -90,8 +90,8 @@ export class WcTileMap extends HTMLElement {
 	async renderMap() {
 		if(!this.#rendered) return;
 		const start = performance.now();
-		if(this.#tiles && this.#map && this.#pallet && this.#tileSize){
-			const map = await renderDispatcher.dispatch("renderTileMap", [this.#map, this.#tiles, this.#transforms, this.#pallet, this.#tileSize]);
+		if(this.#tiles && this.#map && this.#palette && this.#tileSize){
+			const map = await renderDispatcher.dispatch("renderTileMap", [this.#map, this.#tiles, this.#transforms, this.#palette, this.#tileSize]);
 			const canvas = imageToCanvas(map);
 			this.dom.canvasContainer.appendChild(canvas);
 		}

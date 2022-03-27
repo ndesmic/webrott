@@ -9,7 +9,7 @@ This allows us to more easily pan and zoom the map for a better experience.
 
 ## Tile Map with transforms
 
-Before that we need to make some more enhancements.  Firstly, I'm renaming `TedMap` to `TileMap` as this more agnostically describes what it is, it's a map of tiles, which themselves are bitmaps indexing into a pallet.  But in order to properly show the doors we need to have the ability to rotate the tiles so that they display in the correct orientation.  We do this by adding a new property `setTransforms` that let's us pass in a 2d array of transforms.  For simplicity we only need to consider 4 rotations so we'll just assign those to be values 0-3, however we can also add in mirroring in X and Y so we'll add 2 more (even though I don't think we'll actually use them, this component is now generic so we might as well).
+Before that we need to make some more enhancements.  Firstly, I'm renaming `TedMap` to `TileMap` as this more agnostically describes what it is, it's a map of tiles, which themselves are bitmaps indexing into a palette.  But in order to properly show the doors we need to have the ability to rotate the tiles so that they display in the correct orientation.  We do this by adding a new property `setTransforms` that let's us pass in a 2d array of transforms.  For simplicity we only need to consider 4 rotations so we'll just assign those to be values 0-3, however we can also add in mirroring in X and Y so we'll add 2 more (even though I don't think we'll actually use them, this component is now generic so we might as well).
 
 0) No rotations
 1) 90 degrees to the left
@@ -111,7 +111,7 @@ Note that for other property types this might stop working but it minimally hand
 			[3, 3, 3]
 		]
 	]"
-	pallet="[
+	palette="[
 		[255, 0, 0],
 		[0, 255, 0],
 		[0, 0, 255],
@@ -245,20 +245,20 @@ export function loadTransparentSprite(asset) {
 				index += 1;
 
 				//draw post spans
-				let palletIndex;
+				let paletteIndex;
 				for (let row = rowStart; row < rowStart + pixelCount; row++) {
-					palletIndex = dataView.getUint8(index);
+					paletteIndex = dataView.getUint8(index);
 
-					if(palletIndex != 254){
+					if(paletteIndex != 254){
 						index += 1;
-						bitmap[row][col] = palletIndex;
+						bitmap[row][col] = paletteIndex;
 					} else {
 						bitmap[row][col] = 255; //255 I think is unused
 					}
 
 					
 				}
-				if(palletIndex === 254){
+				if(paletteIndex === 254){
 					index += 1;
 				}
 			}
@@ -274,7 +274,7 @@ And here's the result of `MASKED2`:
 
 ![The masked image but rendered correctly.  It's a curved window with bars over it](./images/chapter17/mask2.png)
 
-I colored the translucent pixels using index `255` which is the transparent color (physically purple).  Realistically, we need to layer things to actually see what it's supposed to look like, but I think it's black with an alpha of 21/255.  This is actually going to make drawing interesting since we don't support layered drawing in the tile map.  I suppose if we need to extend it we could make an extension pallet that maps to indices > 256 or something, not sure yet.
+I colored the translucent pixels using index `255` which is the transparent color (physically purple).  Realistically, we need to layer things to actually see what it's supposed to look like, but I think it's black with an alpha of 21/255.  This is actually going to make drawing interesting since we don't support layered drawing in the tile map.  I suppose if we need to extend it we could make an extension palette that maps to indices > 256 or something, not sure yet.
 
 ## Drawing masked s on the map
 

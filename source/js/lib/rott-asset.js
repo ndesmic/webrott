@@ -2,12 +2,12 @@
 
 import { allocBlockArray } from "./array-utils.js";
 import { loadWall } from "./ted-asset.js";
-import { extractPallets } from "./wad-asset.js";
+import { loadpalettes } from "./wad-asset.js";
 import { trimString } from "./file-utils.js";
 import { forEachLumpInSection } from "./wad-utils.js";
 import { multiTry } from "./exception-utils.js";
 
-export function loadSprite(asset, debugName) {
+export function loadSprite(asset) {
 	const dataView = asset instanceof DataView ? asset : new DataView(asset);
 
 	const origSize = dataView.getUint16(0, true);
@@ -35,10 +35,10 @@ export function loadSprite(asset, debugName) {
 
 			//draw post spans
 			for (let row = rowStart; row < rowStart + pixelCount; row++) {
-				const palletIndex = dataView.getUint8(index);
+				const paletteIndex = dataView.getUint8(index);
 				index += 1;
 
-				bitmap[row][col] = palletIndex;
+				bitmap[row][col] = paletteIndex;
 			}
 		}
 	}
@@ -46,7 +46,7 @@ export function loadSprite(asset, debugName) {
 	return bitmap;
 }
 
-export function loadTransparentSprite(asset, debugName) {
+export function loadTransparentSprite(asset) {
 	const dataView = asset instanceof DataView ? asset : new DataView(asset);
 
 	const origSize = dataView.getUint16(0, true);
@@ -74,20 +74,20 @@ export function loadTransparentSprite(asset, debugName) {
 			index += 1;
 
 			//draw post spans
-			let palletIndex;
+			let paletteIndex;
 			for (let row = rowStart; row < rowStart + pixelCount; row++) {
-				palletIndex = dataView.getUint8(index);
+				paletteIndex = dataView.getUint8(index);
 
-				if (palletIndex != 254) {
+				if (paletteIndex != 254) {
 					index += 1;
-					bitmap[row][col] = palletIndex;
+					bitmap[row][col] = paletteIndex;
 				} else {
 					bitmap[row][col] = 255;
 				}
 
 
 			}
-			if (palletIndex === 254) {
+			if (paletteIndex === 254) {
 				index += 1;
 			}
 		}
@@ -170,12 +170,12 @@ export function extractExitEntries(wad) {
 	return exits;
 }
 
-export function getPallets(wad) {
-	const palletData = wad.getByName("PAL");
-	return extractPallets(palletData);
+export function getpalettes(wad) {
+	const paletteData = wad.getByName("PAL");
+	return loadpalettes(paletteData);
 }
 
-function isVerticalOriented(map, row, col) {
+function isDoorVerticalOriented(map, row, col) {
 	const up = isDoor(map, row - 1, col)
 		? 2
 		: isWall(map, row - 1, col)
@@ -211,11 +211,48 @@ function isVerticalOriented(map, row, col) {
 	return false; //should never happen
 }
 
+function isMaskedWallVerticalOriented(map, row, col) {
+	const up = isMaskedWall(map, row - 1, col)
+		? 2
+		: isWall(map, row - 1, col)
+			? 1
+			: 0;
+
+	const down = isMaskedWall(map, row + 1, col)
+		? 2
+		: isWall(map, row + 1, col)
+			? 1
+			: 0;
+
+	const left = isMaskedWall(map, row, col - 1)
+		? 2
+		: isWall(map, row, col - 1)
+			? 1
+			: 0;
+
+	const right = isMaskedWall(map, row, col + 1)
+		? 2
+		: isWall(map, row, col + 1)
+			? 1
+			: 0;
+
+	if (up === 1 && down === 1) return true;
+	if (left === 1 && right === 1) return false;
+	if (up > 0 && down > 0) return true;
+	if (left > 0 && right > 0) return false;
+	if (up > 0) return true;
+	if (down > 0) return true;
+	if (left > 0) return false;
+	if (right > 0) return false;
+	return false; //should never happen
+}
+
 function isDoor(map, row, col) {
 	const value = map[0][row][col];
 	if (value >= 33 && value <= 35) return true;
 	if (value >= 90 && value <= 104) return true;
 	if (value >= 154 && value <= 156) return true;
+	//this condition might not be correct...
 	if ((value & 0x8000) && (value & 0x4000) === 1) return true;
 	return false;
 }
@@ -226,6 +263,15 @@ function isWall(map, row, col) {
 	if (value >= 106 && value <= 107) return true;
 	if (value >= 224 && value <= 233) return true;
 	if (value >= 242 && value <= 244) return true;
+	return false;
+}
+
+
+function isMaskedWall(map, row, col){
+	const value = map[0][row][col];
+	if(value >= 157 && value <= 160) return true;
+	if(value >= 162 && value <= 179) return true;
+	if (((value & 0x8000) && (value & 0x4000)) === 1) return true;
 	return false;
 }
 
@@ -254,7 +300,7 @@ export function loadMap(map, wallTextureCount = 105, doorTextureMap, maskedTextu
 				transformMap[row][col] = 0;
 			} else if (value >= 33 && value <= 35) { //Snake door
 				tileMap[row][col] = doorTextureMap ? wallTextureCount + doorTextureMap[doorIndexToName((value - 33) + 15)] : value;
-				transformMap[row][col] = isVerticalOriented(map, row, col) ? 1 : 0;
+				transformMap[row][col] = isDoorVerticalOriented(map, row, col) ? 1 : 0;
 			} else if (value >= 36 && value <= 45) {
 				tileMap[row][col] = value - 4;
 				transformMap[row][col] = 0;
@@ -269,10 +315,10 @@ export function loadMap(map, wallTextureCount = 105, doorTextureMap, maskedTextu
 				transformMap[row][col] = 0;
 			} else if (value >= 90 && value <= 104) { //Doors
 				tileMap[row][col] = doorTextureMap ? wallTextureCount + doorTextureMap[doorIndexToName((value - 90))] : value;
-				transformMap[row][col] = isVerticalOriented(map, row, col) ? 1 : 0;
+				transformMap[row][col] = isDoorVerticalOriented(map, row, col) ? 1 : 0;
 			} else if (value >= 154 && value <= 156) { //Doors
 				tileMap[row][col] = doorTextureMap ? wallTextureCount + doorTextureMap[doorIndexToName((value - 154) + 18)] : value;
-				transformMap[row][col] = isVerticalOriented(map, row, col) ? 1 : 0;
+				transformMap[row][col] = isDoorVerticalOriented(map, row, col) ? 1 : 0;
 			}
 
 			//map masked walls
@@ -284,8 +330,10 @@ export function loadMap(map, wallTextureCount = 105, doorTextureMap, maskedTextu
 					const texture = maskedTypeToTexture(type).bottom;
 					if (typeof (texture) === "number") {
 						tileMap[row][col] = wallTextureCount + doorTextureCount + texture;
+						transformMap[row][col] = isMaskedWallVerticalOriented(map, row, col) ? 1 : 0;
 					} else {
 						tileMap[row][col] = wallTextureCount + doorTextureCount + maskedTextureMap[texture];
+						transformMap[row][col] = isMaskedWallVerticalOriented(map, row, col) ? 1 : 0;
 					}
 				}
 			} else {

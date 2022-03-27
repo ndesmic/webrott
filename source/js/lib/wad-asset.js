@@ -1,11 +1,9 @@
 import { getString, trimString } from "./file-utils.js";
-import { loadWall as loadTedWall } from "../lib/ted-asset.js";
 import { IndexBitmap } from "../components/index-bitmap.js"
 import { 
 	loadUnknownSprite
 } from "./rott-asset.js";
 import { loadImage as loadDoomImage } from "./doom-asset.js";
-import { multiTry } from "./exception-utils.js";
 
 export function loadAsset(wad, name){
 	name = trimString(name);
@@ -37,11 +35,11 @@ function getNullAsset(){
 
 function getRottImageAsset(wad, dataView){
 	const bitmap = loadUnknownSprite(dataView);
-	const pallets = extractPallets(wad.getByName("PAL"));
+	const palettes = loadpalettes(wad.getByName("PAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
-	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.setpalette(palettes[0]);
 	indexBitmap.height = bitmap.length;
 	indexBitmap.width = bitmap[0].length;
 
@@ -50,36 +48,36 @@ function getRottImageAsset(wad, dataView){
 
 function getDoomImage(wad, dataView){
 	const bitmap = loadDoomImage(dataView);
-	const pallets = extractPallets(wad.getByName("PLAYPAL"));
+	const palettes = loadpalettes(wad.getByName("PLAYPAL"));
 
 	const indexBitmap = new IndexBitmap();
 	indexBitmap.setBitmap(bitmap);
-	indexBitmap.setPallet(pallets[0]);
+	indexBitmap.setpalette(palettes[0]);
 	indexBitmap.height = bitmap.length;
 	indexBitmap.width = bitmap[0].length;
 
 	return indexBitmap;
 }
 
-export function extractPallets(dataView){
+export function loadpalettes(dataView){
 	const mapCount = dataView.byteLength / 768;
-	const pallets = new Array(mapCount);
+	const palettes = new Array(mapCount);
 
 	for (let map = 0; map < mapCount; map++) {
-		const pallet = new Array(256);
+		const palette = new Array(256);
 
 		for(let index = 0; index < 256; index++){
 			const offset = (map * 768) + (index * 3);
-			pallet[index] = [
+			palette[index] = [
 				dataView.getUint8(offset),
 				dataView.getUint8(offset + 1),
 				dataView.getUint8(offset + 2),
 			];
 		}
-		pallets[map] = pallet;
+		palettes[map] = palette;
 	}
 
-	return pallets;
+	return palettes;
 }
 
 function getPlayPal(dataView){
@@ -88,10 +86,10 @@ function getPlayPal(dataView){
 
 	for(let map = 0; map < mapCount; map++){
 		const table = document.createElement("table");
-		table.classList.add("pallet");
+		table.classList.add("palette");
 		const li = document.createElement("li");
 		const h2 = document.createElement("h2");
-		h2.textContent = `Pallet ${map}`;
+		h2.textContent = `palette ${map}`;
 		
 		for(let row = 0; row < 16; row++){
 			const tableRow = document.createElement("tr");
@@ -120,7 +118,7 @@ function getPlayPal(dataView){
 }
 
 function getColorMap(wad, dataView){
-	//get base pallet
+	//get base palette
 	const playPal = wad.get("PLAYPAL") ?? wad.getByName("PAL");
 	const mapCount = dataView.byteLength / 256;
 	const ul = document.createElement("ul");
@@ -128,7 +126,7 @@ function getColorMap(wad, dataView){
 	for(let map = 0; map < mapCount; map++){
 		const li = document.createElement("li");
 		const table = document.createElement("table");
-		table.classList.add("pallet");
+		table.classList.add("palette");
 		const h2 = document.createElement("h2");
 		h2.textContent = `ColorMap ${map}`;
 

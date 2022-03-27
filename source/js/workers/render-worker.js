@@ -1,7 +1,7 @@
 import { renderIndexedBitmap, renderTiledMap } from "../lib/image-utils.js";
 
-function renderTileMap(map, walls, transforms, pallet, tileSize){
-	const renderedWalls = walls.map(w => renderIndexedBitmap(w, pallet, true));
+function renderTileMap(map, walls, transforms, palette, tileSize){
+	const renderedWalls = walls.map(w => renderIndexedBitmap(w, palette, true));
 	return renderTiledMap(map, renderedWalls, transforms, tileSize);
 }
 

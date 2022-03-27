@@ -1,15 +1,15 @@
-export function getPallet(palletBuffer, length, scale = 1) {
-	const pallet = new Array(length);
-	const dataView = new DataView(palletBuffer);
+export function getpalette(paletteBuffer, length, scale = 1) {
+	const palette = new Array(length);
+	const dataView = new DataView(paletteBuffer);
 
 	for (let i = 0; i < length; i++) {
-		pallet[i] = [
+		palette[i] = [
 			dataView.getUint8((i * 3) + 0) * scale,
 			dataView.getUint8((i * 3) + 1) * scale,
 			dataView.getUint8((i * 3) + 2) * scale,
 		];
 	}
-	return pallet;
+	return palette;
 }
 
 export function colorToHex(rgb) {
@@ -19,7 +19,7 @@ export function colorToHex(rgb) {
 	return "#" + red + green + blue;
 }
 
-export function getTableImage(grid, pallet, options = {}) {
+export function getTableImage(grid, palette, options = {}) {
 	const showIndices = options.showIndices ?? true;
 	const mapFunc = options.mapFunc ?? (x => x);
 
@@ -45,7 +45,7 @@ export function getTableImage(grid, pallet, options = {}) {
 					td.textContent = row;
 					td.classList.add("index-col");
 				} else {
-					const color = pallet[grid[row][col - 1]];
+					const color = palette[grid[row][col - 1]];
 					td.style.backgroundColor = color !== undefined ? colorToHex(color) : "";
 					td = mapFunc(td, row, col, color, grid[row][col - 1]);
 				}
@@ -55,7 +55,7 @@ export function getTableImage(grid, pallet, options = {}) {
 		} else {
 			for (let col = 0; col < grid[0].length; col++) {
 				let td = document.createElement("td");
-				const color = pallet[grid[row][col]];
+				const color = palette[grid[row][col]];
 				td.style.backgroundColor = color !== undefined ? colorToHex(color) : "";
 				td = mapFunc(td, row, col, color, grid[row][col - 1]);
 				tr.appendChild(td);
@@ -67,16 +67,16 @@ export function getTableImage(grid, pallet, options = {}) {
 	return table;
 }
 
-export function getTablePallet(pallet){
+export function getTablepalette(palette){
 	const table = document.createElement("table");
 	const width = 16;
-	const height = pallet.length / width;
+	const height = palette.length / width;
 
 	for(let row = 0; row < height; row++){
 		const tr = document.createElement("tr");
 		for(let col = 0; col < width; col++){
 			const td = document.createElement("td");
-			td.style.backgroundColor = colorToHex(pallet[(row * width) + col]);
+			td.style.backgroundColor = colorToHex(palette[(row * width) + col]);
 			tr.appendChild(td);
 		}
 		table.appendChild(tr);

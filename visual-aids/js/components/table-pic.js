@@ -1,9 +1,9 @@
-import { getPallet, getTableImage } from "../libs/image-utils.js";
+import { getpalette, getTableImage } from "../libs/image-utils.js";
 
 customElements.define("table-pic",
 	class extends HTMLElement {
 		static get observedAttributes() {
-			return ["src", "palletsrc", "type"];
+			return ["src", "palettesrc", "type"];
 		}
 		constructor() {
 			super();
@@ -122,10 +122,10 @@ customElements.define("table-pic",
 
 			const bitmap = loadImage(asset);
 
-			const palletBuffer = await fetch(this.palletsrc).then(x => x.arrayBuffer());
+			const paletteBuffer = await fetch(this.palettesrc).then(x => x.arrayBuffer());
 
-			const pallet = getPallet(palletBuffer, 256, this.type === "ted" ? 4 : 1);
-			const table = getTableImage(bitmap, pallet, {
+			const palette = getpalette(paletteBuffer, 256, this.type === "ted" ? 4 : 1);
+			const table = getTableImage(bitmap, palette, {
 				mapFunc: (td, col, row, color, index) => {
 					if(color){
 						td.dataset.color = color;

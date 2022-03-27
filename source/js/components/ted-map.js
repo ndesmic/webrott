@@ -49,13 +49,13 @@ export class TedMap extends HTMLElement {
 	setWallBitmaps(walls){
 		this.walls = walls;
 	}
-	setPallet(pallet){
-		this.pallet = pallet;
+	setpalette(palette){
+		this.palette = palette;
 	}
 	async renderMap() {
 		const start = performance.now();
 		if(this.walls){
-			const map = await renderDispatcher.dispatch("renderTedMap", [this.map, this.walls, this.pallet]);
+			const map = await renderDispatcher.dispatch("renderTedMap", [this.map, this.walls, this.palette]);
 			const canvas = imageToCanvas(map);
 			this.dom.canvasContainer.appendChild(canvas);
 		}

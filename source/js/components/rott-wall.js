@@ -40,7 +40,7 @@ customElements.define("rott-wall",
 			this.lump = lump;
 		}
 		renderImage() {
-			const pallet = this.wad.get("PAL");
+			const palette = this.wad.get("PAL");
 			this.dom.canvas.height = 64;
 			this.dom.canvas.width = 64;
 			this.dom.canvas.style.width = 64 * 4 + "px";
@@ -51,11 +51,11 @@ customElements.define("rott-wall",
 			for (let col = 0; col < 64; col++) {
 				for (let row = 0; row < 64; row++) {
 					const pixelOffset = (col * 64 * 4) + (row * 4);
-					const palletIndex = this.lump.getUint8((row * 64) + col);
-					const palletOffset = palletIndex * 3;
-					imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-					imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-					imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+					const paletteIndex = this.lump.getUint8((row * 64) + col);
+					const paletteOffset = paletteIndex * 3;
+					imageData.data[pixelOffset] = palette.getUint8(paletteOffset); //red
+					imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+					imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 					imageData.data[pixelOffset + 3] = 255
 				}
 			}

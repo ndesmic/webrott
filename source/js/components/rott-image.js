@@ -60,7 +60,7 @@ customElements.define("rott-image",
 			this.lump = lump;
 		}
 		renderImage() {
-			const pallet = this.wad.get("PAL");
+			const palette = this.wad.get("PAL");
 			this.origSize = this.lump.getUint16(0, true);
 			this.width = this.lump.getUint16(2, true);
 			this.height = this.lump.getUint16(4, true);
@@ -91,12 +91,12 @@ customElements.define("rott-image",
 					//draw post spans
 					for (let row = rowStart; row < rowStart + pixelCount; row++) {
 						const pixelOffset = (row * this.width * 4) + (col * 4);
-						const palletIndex = this.lump.getUint8(index);
-						const palletOffset = palletIndex * 3;
+						const paletteIndex = this.lump.getUint8(index);
+						const paletteOffset = paletteIndex * 3;
 
-						imageData.data[pixelOffset] = pallet.getUint8(palletOffset); //red
-						imageData.data[pixelOffset + 1] = pallet.getUint8(palletOffset + 1); //green
-						imageData.data[pixelOffset + 2] = pallet.getUint8(palletOffset + 2); //blue
+						imageData.data[pixelOffset] = palette.getUint8(paletteOffset); //red
+						imageData.data[pixelOffset + 1] = palette.getUint8(paletteOffset + 1); //green
+						imageData.data[pixelOffset + 2] = palette.getUint8(paletteOffset + 2); //blue
 						imageData.data[pixelOffset + 3] = 255;
 
 						index++;
